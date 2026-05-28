@@ -29,11 +29,20 @@ importers:
       '@syno-cli/core':
         specifier: workspace:*
         version: link:../core
+      '@syno-cli/file-station':
+        specifier: workspace:*
+        version: link:../file-station
       commander:
         specifier: 12.1.0
         version: 12.1.0
 
   packages/core: {}
+
+  packages/file-station:
+    dependencies:
+      '@syno-cli/core':
+        specifier: workspace:*
+        version: link:../core
 
 packages:
 

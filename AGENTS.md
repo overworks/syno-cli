@@ -6,10 +6,11 @@ This file gives AI coding assistants (Claude Code, Codex, Cursor, etc.) the cont
 
 TypeScript pnpm + Turborepo monorepo for accessing the Synology DSM Web API.
 
-- `packages/core` — `@syno-cli/core`: HTTP/JSON SDK on top of Node 20's built-in `fetch`. Zero runtime dependencies.
-- `packages/cli` — `@syno-cli/cli` (`bin: syno`): commander-based CLI on top of `core`.
+- `packages/core` — `@syno-cli/core`: HTTP/JSON SDK on top of Node 20's built-in `fetch`. Zero runtime dependencies. Exposes `SynoClient.request` (JSON envelope), `requestRaw` (binary downloads), and `requestForm` (multipart uploads).
+- `packages/file-station` — `@syno-cli/file-station`: Synology File Station wrappers (`list`, `listShares`, `createFolder`, `del`/`startDelete`/`deleteStatus`/`stopDelete`, `upload`, `download`) on top of `core`.
+- `packages/cli` — `@syno-cli/cli` (`bin: syno`): commander-based CLI on top of `core` + domain packages.
 
-Today the surface is `SYNO.API.Auth` (login/logout) and `SYNO.API.Info` (capability discovery). Domain APIs (File Station, Download Station, …) are planned as separate packages.
+Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, and `SYNO.FileStation.*`. Other domains (Download Station, Surveillance, …) will land as additional workspace packages following the same shape.
 
 ## Tooling
 
@@ -37,12 +38,22 @@ Today the surface is `SYNO.API.Auth` (login/logout) and `SYNO.API.Info` (capabil
 packages/
   core/
     src/
-      client.ts       # SynoClient: request(), _sid handling, API path cache
+      client.ts       # SynoClient: request / requestRaw / requestForm, _sid, API path cache
       auth.ts         # login / logout
       api-info.ts     # queryApiInfo (SYNO.API.Info wrapper)
       errors.ts       # SynoApiError + code → message tables
       types.ts
       index.ts        # public surface
+    test/             # vitest, fetch is mocked
+  file-station/
+    src/
+      list.ts                  # listShares, list (SYNO.FileStation.List)
+      create-folder.ts         # createFolder
+      delete.ts                # startDelete / deleteStatus / stopDelete / del (blocking wrapper)
+      upload.ts                # upload (multipart via requestForm)
+      download.ts              # download (raw Response via requestRaw)
+      types.ts                 # FileEntry, ShareEntry, Overwrite, …
+      index.ts                 # public surface
     test/             # vitest, fetch is mocked
   cli/
     src/
@@ -56,12 +67,16 @@ packages/
         login.ts
         logout.ts
         api/list.ts
+        fs/
+          index.ts             # `syno fs` group
+          list.ts mkdir.ts rm.ts upload.ts download.ts
 ```
 
 ## Conventions
 
 - **ESM only** (`"type": "module"`). Import other source files with the `.js` suffix from TypeScript — NodeNext resolves them correctly after emit.
-- **Single HTTP entrypoint**: every Synology call goes through `SynoClient.request`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths.
+- **Single HTTP entrypoint**: every Synology call goes through `SynoClient.{request,requestRaw,requestForm}`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths. Use `request` for JSON envelopes, `requestRaw` for binary downloads, `requestForm` for multipart uploads.
+- **Domain packages**: one workspace package per Synology service (`@syno-cli/file-station`, planned `@syno-cli/download-station`, …). They depend on `@syno-cli/core` via `workspace:*`, expose function-style APIs (`list(client, …)`), and are consumed by `cli` under matching command groups (`syno fs …`).
 - **Error model**: `SynoApiError { code, api, method, isSessionExpired }`. Auth codes get auth-aware messages via `describeSynoErrorCode`. Don't swallow these — bubble them up.
 - **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting.
 - **Credentials**: only `packages/cli/src/config.ts` reads/writes `~/.config/syno-cli/config.json`. Keep mode 0600. Never log passwords or sids.
@@ -70,7 +85,8 @@ packages/
 
 ## Out of scope right now (planned follow-ups)
 
-- Domain modules: `@syno-cli/file-station`, `@syno-cli/download-station`, `@syno-cli/surveillance`, …
+- Additional domain packages: `@syno-cli/download-station`, `@syno-cli/surveillance`, `@syno-cli/photo`, …
+- Streaming uploads for very large files (current `upload` reads the whole file into memory)
 - Real interactive TUI (`interactive.ts` is currently a stub that prints a message)
 - OS keychain credential storage (`keytar`)
 - Shell completion, `changesets` + npm publishing

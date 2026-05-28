@@ -99,4 +99,90 @@ describe("SynoClient.request", () => {
       client.request({ api: "SYNO.Missing", version: 1, method: "go" }),
     ).rejects.toBeInstanceOf(SynoApiError);
   });
+
+  it("JSON-encodes array and object params", async () => {
+    const fetchImpl = mockFetch((url) => {
+      expect(url.searchParams.get("path")).toBe('["/home/a","/home/b"]');
+      expect(url.searchParams.get("opts")).toBe('{"recursive":true}');
+      expect(url.searchParams.get("flag")).toBe("false");
+      expect(url.searchParams.has("missing")).toBe(false);
+      return { success: true, data: { ok: true } };
+    });
+    const client = new SynoClient({ baseUrl: "https://nas.example:5001", fetch: fetchImpl });
+    client.setApiInfoCache({ "SYNO.X": { path: "x.cgi", minVersion: 1, maxVersion: 1 } });
+
+    await client.request({
+      api: "SYNO.X",
+      version: 1,
+      method: "do",
+      params: { path: ["/home/a", "/home/b"], opts: { recursive: true }, flag: false, missing: undefined },
+    });
+  });
+});
+
+describe("SynoClient.requestRaw", () => {
+  it("returns the raw Response for binary endpoints", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response("hello", { status: 200, headers: { "content-type": "application/octet-stream" } }),
+    );
+    const client = new SynoClient({ baseUrl: "https://nas.example:5001", fetch: fetchImpl });
+    client.setApiInfoCache({ "SYNO.Dl": { path: "download.cgi", minVersion: 1, maxVersion: 2 } });
+
+    const res = await client.requestRaw({ api: "SYNO.Dl", version: 2, method: "download" });
+    expect(await res.text()).toBe("hello");
+  });
+
+  it("throws SynoApiError when the HTTP status is not ok", async () => {
+    const fetchImpl = vi.fn(async () => new Response("nope", { status: 500 }));
+    const client = new SynoClient({ baseUrl: "https://nas.example:5001", fetch: fetchImpl });
+    client.setApiInfoCache({ "SYNO.Dl": { path: "download.cgi", minVersion: 1, maxVersion: 2 } });
+
+    await expect(
+      client.requestRaw({ api: "SYNO.Dl", version: 2, method: "download" }),
+    ).rejects.toMatchObject({ code: 500, api: "SYNO.Dl" });
+  });
+});
+
+describe("SynoClient.requestForm", () => {
+  it("POSTs FormData with api/version/method/_sid auto-appended", async () => {
+    const fetchImpl = vi.fn(async (input: string, init?: RequestInit) => {
+      expect(init?.method).toBe("POST");
+      const body = init?.body as FormData;
+      expect(body).toBeInstanceOf(FormData);
+      expect(body.get("api")).toBe("SYNO.Up");
+      expect(body.get("version")).toBe("2");
+      expect(body.get("method")).toBe("upload");
+      expect(body.get("_sid")).toBe("sid-7");
+      expect(body.get("path")).toBe("/home");
+      return new Response(JSON.stringify({ success: true, data: { name: "x.txt" } }), { status: 200 });
+    });
+    const client = new SynoClient({
+      baseUrl: "https://nas.example:5001",
+      sid: "sid-7",
+      fetch: fetchImpl,
+    });
+    client.setApiInfoCache({ "SYNO.Up": { path: "upload.cgi", minVersion: 2, maxVersion: 2 } });
+
+    const form = new FormData();
+    form.set("path", "/home");
+    const out = await client.requestForm<{ name: string }>({
+      api: "SYNO.Up",
+      version: 2,
+      method: "upload",
+      form,
+    });
+    expect(out.name).toBe("x.txt");
+  });
+
+  it("throws SynoApiError on success=false", async () => {
+    const fetchImpl = vi.fn(async () =>
+      new Response(JSON.stringify({ success: false, error: { code: 408 } }), { status: 200 }),
+    );
+    const client = new SynoClient({ baseUrl: "https://nas.example:5001", fetch: fetchImpl });
+    client.setApiInfoCache({ "SYNO.Up": { path: "upload.cgi", minVersion: 2, maxVersion: 2 } });
+
+    await expect(
+      client.requestForm({ api: "SYNO.Up", version: 2, method: "upload", form: new FormData() }),
+    ).rejects.toMatchObject({ code: 408 });
+  });
 });

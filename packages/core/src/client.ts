@@ -14,6 +14,14 @@ const BOOTSTRAP_PATHS: Record<string, string> = {
   "SYNO.API.Auth": "auth.cgi",
 };
 
+function encodeParam(v: unknown): string | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+    return String(v);
+  }
+  return JSON.stringify(v);
+}
+
 export class SynoClient {
   readonly baseUrl: string;
   private sid: string | undefined;
@@ -61,7 +69,7 @@ export class SynoClient {
     return entry.path;
   }
 
-  async request<T>(req: SynoRequest): Promise<T> {
+  private async buildUrl(req: SynoRequest): Promise<URL> {
     const path = await this.resolvePath(req.api);
     const url = new URL(`${this.baseUrl}/webapi/${path}`);
     url.searchParams.set("api", req.api);
@@ -70,11 +78,16 @@ export class SynoClient {
     if (this.sid) url.searchParams.set("_sid", this.sid);
     if (req.params) {
       for (const [k, v] of Object.entries(req.params)) {
-        if (v === undefined) continue;
-        url.searchParams.set(k, String(v));
+        const encoded = encodeParam(v);
+        if (encoded !== undefined) url.searchParams.set(k, encoded);
       }
     }
+    return url;
+  }
 
+  /** Issue a GET, parse the JSON envelope, throw on `success: false`. */
+  async request<T>(req: SynoRequest): Promise<T> {
+    const url = await this.buildUrl(req);
     const res = await this.fetchImpl(url.toString());
     if (!res.ok) {
       throw new SynoApiError({ code: res.status, api: req.api, method: req.method });
@@ -82,6 +95,53 @@ export class SynoClient {
     const body = (await res.json()) as SynoResponse<T>;
     if (!body.success) {
       throw new SynoApiError({ code: body.error.code, api: req.api, method: req.method });
+    }
+    return body.data;
+  }
+
+  /**
+   * Issue a GET and return the raw `Response`. Used for binary endpoints
+   * like SYNO.FileStation.Download where the body is the file contents,
+   * not a JSON envelope.
+   */
+  async requestRaw(req: SynoRequest): Promise<Response> {
+    const url = await this.buildUrl(req);
+    const res = await this.fetchImpl(url.toString());
+    if (!res.ok) {
+      throw new SynoApiError({ code: res.status, api: req.api, method: req.method });
+    }
+    return res;
+  }
+
+  /**
+   * POST a multipart `FormData` body. `api`, `version`, `method`, and `_sid`
+   * are appended to the form automatically — the caller only adds endpoint
+   * payload fields (e.g. `path`, `file`, `overwrite`).
+   */
+  async requestForm<T>(args: {
+    api: string;
+    version: number;
+    method: string;
+    form: FormData;
+  }): Promise<T> {
+    const path = await this.resolvePath(args.api);
+    const url = new URL(`${this.baseUrl}/webapi/${path}`);
+
+    args.form.set("api", args.api);
+    args.form.set("version", String(args.version));
+    args.form.set("method", args.method);
+    if (this.sid) args.form.set("_sid", this.sid);
+
+    const res = await this.fetchImpl(url.toString(), {
+      method: "POST",
+      body: args.form,
+    });
+    if (!res.ok) {
+      throw new SynoApiError({ code: res.status, api: args.api, method: args.method });
+    }
+    const body = (await res.json()) as SynoResponse<T>;
+    if (!body.success) {
+      throw new SynoApiError({ code: body.error.code, api: args.api, method: args.method });
     }
     return body.data;
   }

@@ -26,5 +26,10 @@ export interface SynoRequest {
   api: string;
   version: number;
   method: string;
-  params?: Record<string, string | number | boolean | undefined>;
+  /**
+   * Query/body parameters. Strings/numbers/booleans are stringified as-is;
+   * arrays and objects are JSON.stringify'd (Synology accepts both forms).
+   * `undefined` and `null` are dropped.
+   */
+  params?: Record<string, unknown>;
 }

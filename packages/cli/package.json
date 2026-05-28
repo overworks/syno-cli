@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@syno-cli/core": "workspace:*",
+    "@syno-cli/file-station": "workspace:*",
     "commander": "12.1.0"
   }
 }
