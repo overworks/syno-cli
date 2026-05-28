@@ -1,0 +1,61 @@
+import { Command } from "commander";
+import { listTasks } from "@syno-cli/download-station";
+import { clientFromConfig } from "../../client-from-config.js";
+import { printJson, printTable } from "../../output.js";
+
+interface DlListOptions {
+  host?: string;
+  json?: boolean;
+  limit?: string;
+  offset?: string;
+}
+
+function bytes(n: number | undefined): string {
+  if (!n && n !== 0) return "";
+  const units = ["B", "K", "M", "G", "T"];
+  let v = n;
+  let i = 0;
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i++;
+  }
+  return `${v.toFixed(i === 0 ? 0 : 1)}${units[i]}`;
+}
+
+function pct(downloaded: number | undefined, total: number): string {
+  if (!total || downloaded === undefined) return "";
+  return `${((downloaded / total) * 100).toFixed(1)}%`;
+}
+
+export function dlListCommand(): Command {
+  return new Command("list")
+    .description("List Download Station tasks")
+    .option("--host <url>", "Override the configured DSM URL")
+    .option("--json", "Emit JSON instead of a table")
+    .option("--limit <n>", "Max tasks per page")
+    .option("--offset <n>", "Offset for paging")
+    .action(async (opts: DlListOptions) => {
+      const { client } = await clientFromConfig(opts.host);
+      const page = await listTasks(client, {
+        limit: opts.limit ? Number(opts.limit) : undefined,
+        offset: opts.offset ? Number(opts.offset) : undefined,
+        additional: ["transfer"],
+      });
+      if (opts.json) {
+        printJson(page);
+        return;
+      }
+      printTable(
+        page.tasks.map((t) => ({
+          id: t.id,
+          status: t.status,
+          progress: pct(t.additional?.transfer?.size_downloaded, t.size),
+          size: bytes(t.size),
+          down: `${bytes(t.additional?.transfer?.speed_download)}/s`,
+          up: `${bytes(t.additional?.transfer?.speed_upload)}/s`,
+          title: t.title,
+        })),
+        ["id", "status", "progress", "size", "down", "up", "title"],
+      );
+    });
+}

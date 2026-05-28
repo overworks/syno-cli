@@ -8,9 +8,10 @@ TypeScript pnpm + Turborepo monorepo for accessing the Synology DSM Web API.
 
 - `packages/core` — `@syno-cli/core`: HTTP/JSON SDK on top of Node 20's built-in `fetch`. Zero runtime dependencies. Exposes `SynoClient.request` (JSON envelope), `requestRaw` (binary downloads), and `requestForm` (multipart uploads).
 - `packages/file-station` — `@syno-cli/file-station`: Synology File Station wrappers (`list`, `listShares`, `createFolder`, `del`/`startDelete`/`deleteStatus`/`stopDelete`, `upload`, `download`) on top of `core`.
+- `packages/download-station` — `@syno-cli/download-station`: Download Station task wrappers (`listTasks`, `getTaskInfo`, `createTask`, `pauseTasks`, `resumeTasks`, `deleteTasks`) on top of `core`.
 - `packages/cli` — `@syno-cli/cli` (`bin: syno`): commander-based CLI on top of `core` + domain packages.
 
-Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, and `SYNO.FileStation.*`. Other domains (Download Station, Surveillance, …) will land as additional workspace packages following the same shape.
+Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, and `SYNO.DownloadStation.Task`. Other domains (Surveillance, Photo, …) will land as additional workspace packages following the same shape.
 
 ## Tooling
 
@@ -55,6 +56,12 @@ packages/
       types.ts                 # FileEntry, ShareEntry, Overwrite, …
       index.ts                 # public surface
     test/             # vitest, fetch is mocked
+  download-station/
+    src/
+      task.ts                  # listTasks / getTaskInfo / createTask / pause / resume / deleteTasks
+      types.ts                 # Task, TaskStatus, TaskListPage, …
+      index.ts                 # public surface
+    test/             # vitest, fetch is mocked
   cli/
     src/
       index.ts                 # commander entrypoint + interactive hook
@@ -70,6 +77,9 @@ packages/
         fs/
           index.ts             # `syno fs` group
           list.ts mkdir.ts rm.ts upload.ts download.ts
+        dl/
+          index.ts             # `syno dl` group
+          list.ts add.ts pause.ts rm.ts
 ```
 
 ## Conventions
@@ -85,7 +95,7 @@ packages/
 
 ## Out of scope right now (planned follow-ups)
 
-- Additional domain packages: `@syno-cli/download-station`, `@syno-cli/surveillance`, `@syno-cli/photo`, …
+- Additional domain packages: `@syno-cli/surveillance`, `@syno-cli/photo`, `@syno-cli/audio-station`, …
 - Streaming uploads for very large files (current `upload` reads the whole file into memory)
 - Real interactive TUI (`interactive.ts` is currently a stub that prints a message)
 - OS keychain credential storage (`keytar`)

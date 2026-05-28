@@ -6,11 +6,12 @@ This is a pnpm + Turborepo monorepo containing:
 
 - **`@syno-cli/core`** — small, dependency-free SDK on top of `fetch`. Handles SID-based auth, automatic `SYNO.API.Info` path resolution, and normalized errors.
 - **`@syno-cli/file-station`** — File Station wrappers (list / mkdir / rm / upload / download) on top of `core`.
+- **`@syno-cli/download-station`** — Download Station task wrappers (list / add / pause / resume / rm) on top of `core`.
 - **`@syno-cli/cli`** (`syno` binary) — [commander](https://github.com/tj/commander.js) CLI built on top of `core` and the domain packages.
 
 ## Status
 
-Early. Currently implements `SYNO.API.Auth`, `SYNO.API.Info`, and `SYNO.FileStation.*`. Other domains (Download Station, Surveillance, …) will land as additional workspace packages.
+Early. Currently implements `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, and `SYNO.DownloadStation.Task`. Other domains (Surveillance, Photo, …) will land as additional workspace packages.
 
 ## Requirements
 
@@ -42,6 +43,13 @@ node packages/cli/dist/index.js fs upload ./report.pdf /home/me --overwrite
 node packages/cli/dist/index.js fs download /home/me/photo.jpg -o ./photo.jpg
 node packages/cli/dist/index.js fs rm /home/me/old.txt --recursive
 
+# Download Station (SYNO.DownloadStation.Task)
+node packages/cli/dist/index.js dl list
+node packages/cli/dist/index.js dl add "magnet:?xt=urn:btih:..." --destination home/downloads
+node packages/cli/dist/index.js dl pause  dbid_1
+node packages/cli/dist/index.js dl resume dbid_1
+node packages/cli/dist/index.js dl rm     dbid_1 --force-complete
+
 # Drop the stored session
 node packages/cli/dist/index.js logout
 ```
@@ -54,9 +62,10 @@ After `pnpm build` you can add `packages/cli/dist/index.js` to your `PATH` (or `
 
 ```
 packages/
-  core/           # @syno-cli/core          — base SDK (no runtime deps)
-  file-station/   # @syno-cli/file-station  — SYNO.FileStation.* wrappers
-  cli/            # @syno-cli/cli           — `syno` binary
+  core/               # @syno-cli/core              — base SDK (no runtime deps)
+  file-station/       # @syno-cli/file-station      — SYNO.FileStation.* wrappers
+  download-station/   # @syno-cli/download-station  — SYNO.DownloadStation.Task wrappers
+  cli/                # @syno-cli/cli               — `syno` binary
 ```
 
 ## Development

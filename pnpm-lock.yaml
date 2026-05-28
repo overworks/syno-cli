@@ -29,6 +29,9 @@ importers:
       '@syno-cli/core':
         specifier: workspace:*
         version: link:../core
+      '@syno-cli/download-station':
+        specifier: workspace:*
+        version: link:../download-station
       '@syno-cli/file-station':
         specifier: workspace:*
         version: link:../file-station
@@ -37,6 +40,12 @@ importers:
         version: 12.1.0
 
   packages/core: {}
+
+  packages/download-station:
+    dependencies:
+      '@syno-cli/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/file-station:
     dependencies:
