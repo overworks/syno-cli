@@ -1,0 +1,27 @@
+{
+  "name": "@syno-cli/cli",
+  "version": "0.0.0",
+  "description": "Command-line interface for the Synology DSM Web API",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "syno": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && chmod +x dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@syno-cli/core": "workspace:*",
+    "commander": "12.1.0"
+  }
+}
