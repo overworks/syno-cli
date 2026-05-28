@@ -1,0 +1,88 @@
+# Agent context for syno-cli
+
+This file gives AI coding assistants (Claude Code, Codex, Cursor, etc.) the context they need to work in this repo. `CLAUDE.md` is a symlink to this file.
+
+## What this project is
+
+TypeScript pnpm + Turborepo monorepo for accessing the Synology DSM Web API.
+
+- `packages/core` — `@syno-cli/core`: HTTP/JSON SDK on top of Node 20's built-in `fetch`. Zero runtime dependencies.
+- `packages/cli` — `@syno-cli/cli` (`bin: syno`): commander-based CLI on top of `core`.
+
+Today the surface is `SYNO.API.Auth` (login/logout) and `SYNO.API.Info` (capability discovery). Domain APIs (File Station, Download Station, …) are planned as separate packages.
+
+## Tooling
+
+- Node.js >= 20 (maintainer uses Node 24)
+- pnpm 11, Turborepo 2
+- TypeScript 5 with `NodeNext` module resolution, `strict` + `noUncheckedIndexedAccess`
+- Vitest for tests; HTTP is exercised via an injected `fetch` — no real network
+
+## Common commands
+
+| Goal | Command |
+| --- | --- |
+| Install | `pnpm install` |
+| Build (turbo) | `pnpm build` |
+| Test (turbo) | `pnpm test` |
+| Typecheck | `pnpm typecheck` |
+| Watch the CLI | `pnpm --filter @syno-cli/cli dev` |
+| Run built CLI | `node packages/cli/dist/index.js <cmd>` |
+
+`turbo.json` makes `^build` a dependency of `build`, `test`, and `typecheck`, so `cli` always sees a fresh `core/dist`.
+
+## Layout
+
+```
+packages/
+  core/
+    src/
+      client.ts       # SynoClient: request(), _sid handling, API path cache
+      auth.ts         # login / logout
+      api-info.ts     # queryApiInfo (SYNO.API.Info wrapper)
+      errors.ts       # SynoApiError + code → message tables
+      types.ts
+      index.ts        # public surface
+    test/             # vitest, fetch is mocked
+  cli/
+    src/
+      index.ts                 # commander entrypoint + interactive hook
+      config.ts                # ~/.config/syno-cli/config.json (mode 0600)
+      client-from-config.ts    # config → SynoClient
+      output.ts                # printTable / printJson
+      prompt.ts                # readline + raw-mode password prompt
+      interactive.ts           # STUB — interactive mode not implemented yet
+      commands/
+        login.ts
+        logout.ts
+        api/list.ts
+```
+
+## Conventions
+
+- **ESM only** (`"type": "module"`). Import other source files with the `.js` suffix from TypeScript — NodeNext resolves them correctly after emit.
+- **Single HTTP entrypoint**: every Synology call goes through `SynoClient.request`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths.
+- **Error model**: `SynoApiError { code, api, method, isSessionExpired }`. Auth codes get auth-aware messages via `describeSynoErrorCode`. Don't swallow these — bubble them up.
+- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting.
+- **Credentials**: only `packages/cli/src/config.ts` reads/writes `~/.config/syno-cli/config.json`. Keep mode 0600. Never log passwords or sids.
+- **`core` has no runtime deps.** Add new runtime deps to `cli`. If you need a parser/util in `core`, write it.
+- **Tests don't hit the network.** Inject a `fetch` into `SynoClient({ fetch })` and assert on the URL + body.
+
+## Out of scope right now (planned follow-ups)
+
+- Domain modules: `@syno-cli/file-station`, `@syno-cli/download-station`, `@syno-cli/surveillance`, …
+- Real interactive TUI (`interactive.ts` is currently a stub that prints a message)
+- OS keychain credential storage (`keytar`)
+- Shell completion, `changesets` + npm publishing
+
+## Things to avoid
+
+- Don't introduce a second HTTP client or bypass `SynoClient.request` — `_sid`, path resolution, and error normalization all live there.
+- Don't add automatic retries on `SynoApiError`. Session-expiry (105/106/107/119) should surface a re-login hint, not silently re-auth — the password isn't kept in memory.
+- Don't mutate `~/.config/syno-cli/config.json` from anywhere other than `config.ts`.
+- Don't paper over Synology error codes with generic messages; extend the tables in `errors.ts` instead.
+- Don't commit `dist/`, `.turbo/`, or `node_modules/` (already gitignored).
+
+## Reference: relevant planning notes
+
+The original bootstrap plan lives at `~/.claude/plans/synology-web-api-velvety-mountain.md` on the maintainer's machine — useful background but not normative; this file is the source of truth for current state.
