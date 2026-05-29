@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { SynoApiError } from "@overworks/syno-core";
-import { loginCommand } from "./commands/login.js";
-import { logoutCommand } from "./commands/logout.js";
+import { authCommand } from "./commands/auth/index.js";
 import { apiCommand } from "./commands/api/list.js";
 import { fileCommand } from "./commands/file/index.js";
 import { downloadCommand } from "./commands/download/index.js";
@@ -18,8 +17,7 @@ async function main(): Promise<void> {
       await runInteractive();
     });
 
-  program.addCommand(loginCommand());
-  program.addCommand(logoutCommand());
+  program.addCommand(authCommand());
   program.addCommand(apiCommand());
   program.addCommand(fileCommand());
   program.addCommand(downloadCommand());

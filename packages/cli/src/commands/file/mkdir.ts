@@ -6,6 +6,7 @@ import { printJson } from "../../output.js";
 
 interface MkdirOptions {
   host?: string;
+  profile?: string;
   json?: boolean;
   parents?: boolean;
 }
@@ -14,7 +15,8 @@ export function fileMkdirCommand(): Command {
   return new Command("mkdir")
     .description("Create a folder on the DSM")
     .argument("<path>", "Absolute remote path of the folder to create")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .option("-p, --parents", "Create missing parents (force_parent)")
     .option("--json", "Emit JSON instead of a status line")
     .action(async (target: string, opts: MkdirOptions) => {
@@ -23,7 +25,7 @@ export function fileMkdirCommand(): Command {
       if (!name || parent === target) {
         throw new Error(`Invalid path: ${target}`);
       }
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const res = await createFolder(client, {
         folderPath: parent,
         name,

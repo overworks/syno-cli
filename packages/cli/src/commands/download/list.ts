@@ -5,6 +5,7 @@ import { printJson, printTable } from "../../output.js";
 
 interface DownloadListOptions {
   host?: string;
+  profile?: string;
   json?: boolean;
   limit?: string;
   offset?: string;
@@ -30,12 +31,13 @@ function pct(downloaded: number | undefined, total: number): string {
 export function downloadListCommand(): Command {
   return new Command("list")
     .description("List Download Station tasks")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .option("--json", "Emit JSON instead of a table")
     .option("--limit <n>", "Max tasks per page")
     .option("--offset <n>", "Offset for paging")
     .action(async (opts: DownloadListOptions) => {
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const page = await listTasks(client, {
         limit: opts.limit ? Number(opts.limit) : undefined,
         offset: opts.offset ? Number(opts.offset) : undefined,

@@ -28,8 +28,17 @@ pnpm build
 ## Usage
 
 ```bash
-# Authenticate against your DSM
-node packages/cli/dist/index.js login --host https://nas.example:5001
+# Authenticate against your DSM (stores under profile "default" unless --profile is given)
+node packages/cli/dist/index.js auth login --host https://nas.example:5001
+node packages/cli/dist/index.js auth login --profile work --host https://nas.work:5001
+
+# Inspect / switch / drop profiles
+node packages/cli/dist/index.js auth list
+node packages/cli/dist/index.js auth show           # current profile (sid masked)
+node packages/cli/dist/index.js auth use work       # switch the current profile
+node packages/cli/dist/index.js auth logout         # log out current profile
+node packages/cli/dist/index.js auth logout --all   # log out every profile and drop config
+node packages/cli/dist/index.js auth rm work        # forget locally without calling DSM logout
 
 # List the APIs your DSM exposes
 node packages/cli/dist/index.js api list
@@ -50,11 +59,12 @@ node packages/cli/dist/index.js download pause  dbid_1
 node packages/cli/dist/index.js download resume dbid_1
 node packages/cli/dist/index.js download rm     dbid_1 --force-complete
 
-# Drop the stored session
-node packages/cli/dist/index.js logout
+# Every non-auth command accepts --profile <name> to override the current profile for one call
+node packages/cli/dist/index.js --profile work file list
 ```
 
-Credentials and the session ID are written to `~/.config/syno-cli/config.json` with mode `0600`.
+Profiles are stored at `~/.config/syno-cli/config.json` (mode `0600`) as
+`{current, profiles: {<name>: {host, account, sid, savedAt}}}`.
 
 After `pnpm build` you can add `packages/cli/dist/index.js` to your `PATH` (or `pnpm link --global` from `packages/cli`) so the binary is just `syno`.
 

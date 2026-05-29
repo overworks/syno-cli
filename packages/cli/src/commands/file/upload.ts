@@ -6,6 +6,7 @@ import { clientFromConfig } from "../../client-from-config.js";
 
 interface UploadOptions {
   host?: string;
+  profile?: string;
   overwrite?: boolean;
   skip?: boolean;
   parents?: boolean;
@@ -17,7 +18,8 @@ export function fileUploadCommand(): Command {
     .description("Upload a local file into a remote directory")
     .argument("<local>", "Path to local file")
     .argument("<remoteDir>", "Destination folder on the DSM (e.g. /home/me)")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .option("--overwrite", "Overwrite if a file with the same name exists")
     .option("--skip", "Skip if a file with the same name exists")
     .option("-p, --parents", "Create missing parents of the remote directory")
@@ -28,7 +30,7 @@ export function fileUploadCommand(): Command {
       const data = await readFile(local);
       const filename = opts.name ?? basename(local);
 
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const res = await upload(client, {
         destPath: remoteDir,
         filename,

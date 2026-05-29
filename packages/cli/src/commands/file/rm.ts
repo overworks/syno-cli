@@ -4,6 +4,7 @@ import { clientFromConfig } from "../../client-from-config.js";
 
 interface RmOptions {
   host?: string;
+  profile?: string;
   recursive?: boolean;
   quiet?: boolean;
 }
@@ -12,11 +13,12 @@ export function fileRmCommand(): Command {
   return new Command("rm")
     .description("Delete one or more remote paths")
     .argument("<paths...>", "Remote paths to delete")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .option("-r, --recursive", "Recurse into directories")
     .option("-q, --quiet", "Suppress progress output")
     .action(async (paths: string[], opts: RmOptions) => {
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const status = await del(client, {
         path: paths,
         recursive: opts.recursive,

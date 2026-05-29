@@ -5,6 +5,7 @@ import { printJson, printTable } from "../../output.js";
 
 interface FileListOptions {
   host?: string;
+  profile?: string;
   json?: boolean;
   limit?: string;
   offset?: string;
@@ -31,12 +32,13 @@ export function fileListCommand(): Command {
   return new Command("list")
     .description("List shared folders (no arg) or the contents of a directory")
     .argument("[path]", "Remote folder path; omit to list shares")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .option("--json", "Emit JSON instead of a table")
     .option("--limit <n>", "Max entries per page")
     .option("--offset <n>", "Offset for paging")
     .action(async (path: string | undefined, opts: FileListOptions) => {
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const limit = opts.limit ? Number(opts.limit) : undefined;
       const offset = opts.offset ? Number(opts.offset) : undefined;
       const additional = ["size", "time", "owner", "type"];

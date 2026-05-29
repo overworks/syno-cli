@@ -8,6 +8,7 @@ import { clientFromConfig } from "../../client-from-config.js";
 
 interface DownloadOptions {
   host?: string;
+  profile?: string;
   output?: string;
   force?: boolean;
 }
@@ -16,12 +17,13 @@ export function fileDownloadCommand(): Command {
   return new Command("download")
     .description("Download a remote file to local disk (or stdout with -o -)")
     .argument("<remotePath>", "Remote file path on the DSM")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .option("-o, --output <local>", "Local destination path (default: basename of remote, '-' for stdout)")
     .option("-f, --force", "Overwrite local file if it exists")
     .action(async (remotePath: string, opts: DownloadOptions) => {
       const dest = opts.output ?? basename(remotePath);
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const res = await download(client, { path: remotePath });
       if (!res.body) throw new Error("Empty response body");
       const nodeStream = Readable.fromWeb(res.body as Parameters<typeof Readable.fromWeb>[0]);

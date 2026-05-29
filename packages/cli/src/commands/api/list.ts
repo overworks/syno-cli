@@ -6,6 +6,7 @@ import { printJson, printTable } from "../../output.js";
 interface ApiListOptions {
   query?: string;
   host?: string;
+  profile?: string;
   json?: boolean;
 }
 
@@ -13,10 +14,11 @@ export function apiListCommand(): Command {
   return new Command("list")
     .description("List APIs exposed by the DSM (SYNO.API.Info)")
     .option("--query <substr>", "Filter API names by substring (case-insensitive)")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .option("--json", "Emit JSON instead of a table")
     .action(async (opts: ApiListOptions) => {
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const info = await queryApiInfo(client, "all");
       const needle = opts.query?.toLowerCase();
       const rows = Object.entries(info)

@@ -1,23 +1,27 @@
 import { Command } from "commander";
 import { SynoClient, login } from "@overworks/syno-core";
-import { saveConfig } from "../config.js";
-import { promptLine, promptPassword } from "../prompt.js";
+import { upsertProfile } from "../../config.js";
+import { promptLine, promptPassword } from "../../prompt.js";
 
 interface LoginOptions {
+  profile?: string;
   host?: string;
   account?: string;
   password?: string;
   otp?: string;
 }
 
-export function loginCommand(): Command {
+export function authLoginCommand(): Command {
   return new Command("login")
     .description("Authenticate against a Synology DSM and store the session locally")
+    .option("--profile <name>", "Profile name to store the session under (default: \"default\")")
     .option("--host <url>", "DSM base URL, e.g. https://nas.example:5001")
     .option("--account <name>", "Account name")
     .option("--password <pw>", "Account password (omit to prompt)")
     .option("--otp <code>", "2-step verification code")
     .action(async (opts: LoginOptions) => {
+      const profileName =
+        opts.profile ?? ((await promptLine("Profile [default]: ")).trim() || "default");
       const host = opts.host ?? (await promptLine("DSM URL: "));
       const account = opts.account ?? (await promptLine("Account: "));
       const password = opts.password ?? (await promptPassword("Password: "));
@@ -29,12 +33,12 @@ export function loginCommand(): Command {
         otpCode: opts.otp,
       });
 
-      await saveConfig({
+      await upsertProfile(profileName, {
         host,
         account,
         sid: result.sid,
         savedAt: new Date().toISOString(),
       });
-      process.stdout.write(`Logged in as ${account} on ${host}\n`);
+      process.stdout.write(`Logged in as ${account} on ${host} (profile: ${profileName})\n`);
     });
 }

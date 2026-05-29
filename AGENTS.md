@@ -67,14 +67,15 @@ packages/
   cli/
     src/
       index.ts                 # commander entrypoint + interactive hook
-      config.ts                # ~/.config/syno-cli/config.json (mode 0600)
-      client-from-config.ts    # config → SynoClient
+      config.ts                # named-profile config CRUD (loadConfig / upsertProfile / removeProfile / setCurrent / listProfiles)
+      client-from-config.ts    # {host?, profile?} → SynoClient
       output.ts                # printTable / printJson
       prompt.ts                # readline + raw-mode password prompt
       interactive.ts           # STUB — interactive mode not implemented yet
       commands/
-        login.ts
-        logout.ts
+        auth/
+          index.ts             # `syno auth` group
+          login.ts logout.ts list.ts show.ts use.ts rm.ts
         api/list.ts
         file/
           index.ts             # `syno file` group (DSM alias for FileStation)
@@ -82,6 +83,7 @@ packages/
         download/
           index.ts             # `syno download` group (DSM alias for DownloadStation)
           list.ts add.ts pause.ts rm.ts
+    test/             # vitest, XDG_CONFIG_HOME-overridden tmpdir, no network
 ```
 
 ## Conventions
@@ -90,8 +92,9 @@ packages/
 - **Single HTTP entrypoint**: every Synology call goes through `SynoClient.{request,requestRaw,requestForm}`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths. Use `request` for JSON envelopes, `requestRaw` for binary downloads, `requestForm` for multipart uploads.
 - **Domain packages**: one workspace package per Synology service (`@overworks/syno-file`, `@overworks/syno-download`, …). They depend on `@overworks/syno-core` via `workspace:*`, expose function-style APIs (`list(client, …)`), and are consumed by `cli` under matching command groups (`syno file …`, `syno download …`).
 - **Error model**: `SynoApiError { code, api, method, isSessionExpired }`. Auth codes get auth-aware messages via `describeSynoErrorCode`. Don't swallow these — bubble them up.
-- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting. Command-group names mirror DSM's built-in aliases — `file` for `SYNO.FileStation.*` and `download` for `SYNO.DownloadStation.Task`.
-- **Credentials**: only `packages/cli/src/config.ts` reads/writes `~/.config/syno-cli/config.json`. Keep mode 0600. Never log passwords or sids.
+- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting. Command-group names mirror DSM's built-in aliases — `file` for `SYNO.FileStation.*` and `download` for `SYNO.DownloadStation.Task`. Auth/session lives under `syno auth` (login/logout/list/show/use/rm) — there is no top-level `syno login`.
+- **Profiles**: every non-auth command accepts `--profile <name>` (default: current). `--host <url>` is still available as a one-shot URL override on the same profile (useful pre-login or for peeking).
+- **Credentials**: `~/.config/syno-cli/config.json` is `{current, profiles: {<name>: {host, account, sid, savedAt}}}` at mode 0600. Only `packages/cli/src/config.ts` reads/writes it. The schema has no `version` field — malformed shapes are rejected, not migrated. Never log passwords or sids (the `auth show` command masks the sid to `****<last 4>`).
 - **`core` has no runtime deps.** Add new runtime deps to `cli`. If you need a parser/util in `core`, write it.
 - **Tests don't hit the network.** Inject a `fetch` into `SynoClient({ fetch })` and assert on the URL + body.
 

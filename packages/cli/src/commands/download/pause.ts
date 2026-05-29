@@ -4,6 +4,7 @@ import { clientFromConfig } from "../../client-from-config.js";
 
 interface PauseOptions {
   host?: string;
+  profile?: string;
 }
 
 function summarize(results: Array<{ id: string; error: number }>): string {
@@ -16,9 +17,10 @@ export function downloadPauseCommand(): Command {
   return new Command("pause")
     .description("Pause one or more tasks")
     .argument("<ids...>", "Task IDs to pause")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .action(async (ids: string[], opts: PauseOptions) => {
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const res = await pauseTasks(client, ids);
       process.stdout.write(`${summarize(res)}\n`);
     });
@@ -28,9 +30,10 @@ export function downloadResumeCommand(): Command {
   return new Command("resume")
     .description("Resume one or more paused tasks")
     .argument("<ids...>", "Task IDs to resume")
-    .option("--host <url>", "Override the configured DSM URL")
+    .option("--profile <name>", "Auth profile to use (default: current)")
+    .option("--host <url>", "Override the DSM URL for this call only")
     .action(async (ids: string[], opts: PauseOptions) => {
-      const { client } = await clientFromConfig(opts.host);
+      const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const res = await resumeTasks(client, ids);
       process.stdout.write(`${summarize(res)}\n`);
     });
