@@ -6,7 +6,8 @@ This is a pnpm + Turborepo monorepo containing:
 
 - **`@overworks/syno-core`** — small, dependency-free SDK on top of `fetch`. Handles SID-based auth, automatic `SYNO.API.Info` path resolution, and normalized errors.
 - **`@overworks/syno-file`** — File Station wrappers (list / mkdir / rm / upload / download) on top of `syno-core`.
-- **`@overworks/syno-download`** — Download Station task wrappers (list / add / pause / resume / rm) on top of `syno-core`.
+- **`@overworks/syno-ds`** — Download Station task wrappers (list / add / pause / resume / rm) on top of `syno-core`.
+- **`@overworks/syno-system`** — read-only system-status wrappers (info / usage / storage) on top of `syno-core`.
 - **`@overworks/syno-cli`** (`syno` binary) — [commander](https://github.com/tj/commander.js) CLI built on top of `syno-core` and the domain packages.
 
 ## Status
@@ -88,7 +89,7 @@ After `pnpm build` you can add `packages/cli/dist/index.js` to your `PATH` (or `
 packages/
   core/               # @overworks/syno-core      — base SDK (no runtime deps)
   file/               # @overworks/syno-file      — SYNO.FileStation.* wrappers
-  download/           # @overworks/syno-download  — SYNO.DownloadStation.Task wrappers
+  ds/                 # @overworks/syno-ds        — SYNO.DownloadStation.Task wrappers
   system/             # @overworks/syno-system    — SYNO.Core.System.* + storage wrappers
   cli/                # @overworks/syno-cli       — `syno` binary
 ```

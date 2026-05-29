@@ -1,4 +1,4 @@
-# @overworks/syno-download
+# @overworks/syno-ds
 
 ## 0.1.0
 

@@ -1,4 +1,4 @@
-# @overworks/syno-download
+# @overworks/syno-ds
 
 Synology Download Station (`SYNO.DownloadStation.Task`) wrappers built on
 [`@overworks/syno-core`](https://www.npmjs.com/package/@overworks/syno-core).
@@ -6,14 +6,14 @@ Synology Download Station (`SYNO.DownloadStation.Task`) wrappers built on
 ## Install
 
 ```bash
-npm install @overworks/syno-download @overworks/syno-core
+npm install @overworks/syno-ds @overworks/syno-core
 ```
 
 ## Usage
 
 ```ts
 import { SynoClient } from "@overworks/syno-core";
-import { listTasks, createTask, pauseTasks, deleteTasks } from "@overworks/syno-download";
+import { listTasks, createTask, pauseTasks, deleteTasks } from "@overworks/syno-ds";
 
 const client = new SynoClient({ baseUrl: "https://nas.example:5001", sid });
 

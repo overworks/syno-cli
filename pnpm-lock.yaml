@@ -32,9 +32,9 @@ importers:
       '@overworks/syno-core':
         specifier: workspace:*
         version: link:../core
-      '@overworks/syno-download':
+      '@overworks/syno-ds':
         specifier: workspace:*
-        version: link:../download
+        version: link:../ds
       '@overworks/syno-file':
         specifier: workspace:*
         version: link:../file
@@ -47,7 +47,7 @@ importers:
 
   packages/core: {}
 
-  packages/download:
+  packages/ds:
     dependencies:
       '@overworks/syno-core':
         specifier: workspace:*

@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { createTask } from "@overworks/syno-download";
+import { createTask } from "@overworks/syno-ds";
 import { clientFromConfig } from "../../client-from-config.js";
 
 interface AddOptions {

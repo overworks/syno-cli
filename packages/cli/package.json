@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@overworks/syno-core": "workspace:*",
-    "@overworks/syno-download": "workspace:*",
+    "@overworks/syno-ds": "workspace:*",
     "@overworks/syno-file": "workspace:*",
     "@overworks/syno-system": "workspace:*",
     "commander": "12.1.0"

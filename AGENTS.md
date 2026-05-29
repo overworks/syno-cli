@@ -8,7 +8,7 @@ TypeScript pnpm + Turborepo monorepo for accessing the Synology DSM Web API.
 
 - `packages/core` — `@overworks/syno-core`: HTTP/JSON SDK on top of Node 20's built-in `fetch`. Zero runtime dependencies. Exposes `SynoClient.request` (JSON envelope), `requestRaw` (binary downloads), `requestForm` (in-memory multipart), and `requestStreamForm` (streamed multipart with `Content-Length` for large uploads).
 - `packages/file` — `@overworks/syno-file`: Synology File Station wrappers (`list`, `listShares`, `createFolder`, `del`/`startDelete`/`deleteStatus`/`stopDelete`, `upload`/`uploadFromPath`, `download`) on top of `syno-core`.
-- `packages/download` — `@overworks/syno-download`: Download Station task wrappers (`listTasks`, `getTaskInfo`, `createTask`, `pauseTasks`, `resumeTasks`, `deleteTasks`) on top of `syno-core`.
+- `packages/ds` — `@overworks/syno-ds`: Download Station task wrappers (`listTasks`, `getTaskInfo`, `createTask`, `pauseTasks`, `resumeTasks`, `deleteTasks`) on top of `syno-core`. (npm rejects names containing "download", so the package is `syno-ds`; the CLI group stays `syno download`.)
 - `packages/system` — `@overworks/syno-system`: read-only system-status wrappers (`getSystemInfo`, `getUtilization`, `getStorageInfo`) over `SYNO.Core.System.*` + `SYNO.Storage.CGI.Storage`, on top of `syno-core`.
 - `packages/cli` — `@overworks/syno-cli` (`bin: syno`): commander-based CLI on top of `syno-core` + domain packages.
 
@@ -60,7 +60,7 @@ packages/
       types.ts                 # FileEntry, ShareEntry, Overwrite, …
       index.ts                 # public surface
     test/             # vitest, fetch is mocked
-  download/                      # @overworks/syno-download
+  ds/                            # @overworks/syno-ds
     src/
       task.ts                  # listTasks / getTaskInfo / createTask / pause / resume / deleteTasks
       types.ts                 # Task, TaskStatus, TaskListPage, …
@@ -103,7 +103,7 @@ packages/
 
 - **ESM only** (`"type": "module"`). Import other source files with the `.js` suffix from TypeScript — NodeNext resolves them correctly after emit.
 - **Single HTTP entrypoint**: every Synology call goes through `SynoClient.{request,requestRaw,requestForm,requestStreamForm}`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths. Use `request` for JSON envelopes, `requestRaw` for binary downloads, `requestForm` for in-memory multipart, and `requestStreamForm` when the request body has a single large file part that must be streamed off disk.
-- **Domain packages**: one workspace package per Synology service (`@overworks/syno-file`, `@overworks/syno-download`, …). They depend on `@overworks/syno-core` via `workspace:*`, expose function-style APIs (`list(client, …)`), and are consumed by `cli` under matching command groups (`syno file …`, `syno download …`).
+- **Domain packages**: one workspace package per Synology service (`@overworks/syno-file`, `@overworks/syno-ds`, …). They depend on `@overworks/syno-core` via `workspace:*`, expose function-style APIs (`list(client, …)`), and are consumed by `cli` under matching command groups (`syno file …`, `syno download …`). npm package names can't contain "download" (blocklisted), so Download Station ships as `syno-ds` even though its CLI group is `download`.
 - **Error model**: `SynoApiError { code, api, method, isSessionExpired }`. Auth codes get auth-aware messages via `describeSynoErrorCode`. Don't swallow these — bubble them up.
 - **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting. Command-group names mirror DSM's built-in aliases — `file` for `SYNO.FileStation.*` and `download` for `SYNO.DownloadStation.Task`. `SYNO.Core.System.*` has no short DSM alias, so its group is named after the API family: `system` (info/usage/storage). Auth/session lives under `syno auth` (login/logout/list/show/use/rm) — there is no top-level `syno login`.
 - **Profiles**: every non-auth command accepts `--profile <name>`. Selection precedence is `--profile` > `$SYNO_PROFILE` > config `current`. `--host <url>` is still available as a one-shot URL override on the same profile (useful pre-login or for peeking). All three are resolved in one place — `client-from-config.ts`.

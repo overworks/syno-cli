@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { pauseTasks, resumeTasks } from "@overworks/syno-download";
+import { pauseTasks, resumeTasks } from "@overworks/syno-ds";
 import { clientFromConfig } from "../../client-from-config.js";
 
 interface PauseOptions {

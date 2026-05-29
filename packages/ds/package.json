@@ -1,14 +1,14 @@
 {
-  "name": "@overworks/syno-download",
+  "name": "@overworks/syno-ds",
   "version": "0.1.0",
   "description": "Synology Download Station (SYNO.DownloadStation.*) client built on @overworks/syno-core",
   "license": "MIT",
   "author": "Minhyung Park",
-  "homepage": "https://github.com/overworks/syno-cli/tree/0.x/packages/download#readme",
+  "homepage": "https://github.com/overworks/syno-cli/tree/0.x/packages/ds#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/overworks/syno-cli.git",
-    "directory": "packages/download"
+    "directory": "packages/ds"
   },
   "bugs": "https://github.com/overworks/syno-cli/issues",
   "keywords": [
@@ -16,8 +16,7 @@
     "dsm",
     "nas",
     "webapi",
-    "downloadstation",
-    "download"
+    "downloadstation"
   ],
   "publishConfig": {
     "access": "public",
