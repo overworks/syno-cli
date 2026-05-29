@@ -11,6 +11,7 @@ import { downloadCommand } from "./commands/download/index.js";
 import { systemCommand } from "./commands/system/index.js";
 import { surveillanceCommand } from "./commands/surveillance/index.js";
 import { photoCommand } from "./commands/photo/index.js";
+import { audioCommand } from "./commands/audio/index.js";
 import { completionCommand } from "./commands/completion.js";
 import { runInteractive } from "./interactive.js";
 
@@ -39,6 +40,7 @@ async function main(): Promise<void> {
   program.addCommand(systemCommand());
   program.addCommand(surveillanceCommand());
   program.addCommand(photoCommand());
+  program.addCommand(audioCommand());
   program.addCommand(completionCommand());
 
   await program.parseAsync(process.argv);

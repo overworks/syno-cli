@@ -27,8 +27,17 @@ importers:
         specifier: 1.6.0
         version: 1.6.0(@types/node@20.14.10)
 
+  packages/audio:
+    dependencies:
+      '@overworks/syno-core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/cli:
     dependencies:
+      '@overworks/syno-audio':
+        specifier: workspace:*
+        version: link:../audio
       '@overworks/syno-core':
         specifier: workspace:*
         version: link:../core
