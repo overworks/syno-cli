@@ -9,11 +9,12 @@ TypeScript pnpm + Turborepo monorepo for accessing the Synology DSM Web API.
 - `packages/core` — `@overworks/syno-core`: HTTP/JSON SDK on top of Node 20's built-in `fetch`. Zero runtime dependencies. Exposes `SynoClient.request` (JSON envelope), `requestRaw` (binary downloads), `requestForm` (in-memory multipart), and `requestStreamForm` (streamed multipart with `Content-Length` for large uploads).
 - `packages/file` — `@overworks/syno-file`: Synology File Station wrappers (`list`, `listShares`, `createFolder`, `del`/`startDelete`/`deleteStatus`/`stopDelete`, `upload`/`uploadFromPath`, `download`) on top of `syno-core`.
 - `packages/download` — `@overworks/syno-download`: Download Station task wrappers (`listTasks`, `getTaskInfo`, `createTask`, `pauseTasks`, `resumeTasks`, `deleteTasks`) on top of `syno-core`.
+- `packages/system` — `@overworks/syno-system`: read-only system-status wrappers (`getSystemInfo`, `getUtilization`, `getStorageInfo`) over `SYNO.Core.System.*` + `SYNO.Storage.CGI.Storage`, on top of `syno-core`.
 - `packages/cli` — `@overworks/syno-cli` (`bin: syno`): commander-based CLI on top of `syno-core` + domain packages.
 
 Package names are scoped under the maintainer's npm org `@overworks` with a `syno-` prefix; one Synology service per package. Names trim the `-Station` suffix to match the DSM-side aliases (`@overworks/syno-file`, not `@overworks/syno-file-station`).
 
-Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, and `SYNO.DownloadStation.Task`. Other domains (Surveillance, Photo, …) will land as additional workspace packages following the same shape.
+Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, `SYNO.DownloadStation.Task`, `SYNO.Core.System`, `SYNO.Core.System.Utilization`, and `SYNO.Storage.CGI.Storage`. Other domains (Surveillance, Photo, …) will land as additional workspace packages following the same shape.
 
 ## Tooling
 
@@ -65,6 +66,12 @@ packages/
       types.ts                 # Task, TaskStatus, TaskListPage, …
       index.ts                 # public surface
     test/             # vitest, fetch is mocked
+  system/                        # @overworks/syno-system
+    src/
+      system.ts                # getSystemInfo / getUtilization / getStorageInfo
+      types.ts                 # SystemInfo, Utilization, StorageInfo, …
+      index.ts                 # public surface
+    test/             # vitest, fetch is mocked
   cli/
     src/
       index.ts                 # commander entrypoint + interactive hook
@@ -85,6 +92,9 @@ packages/
         download/
           index.ts             # `syno download` group (DSM alias for DownloadStation)
           list.ts add.ts pause.ts rm.ts
+        system/
+          index.ts             # `syno system` group (SYNO.Core.System.* + storage)
+          info.ts usage.ts storage.ts format.ts
     test/             # vitest, XDG_CONFIG_HOME-overridden tmpdir, no network
 ```
 
@@ -94,7 +104,7 @@ packages/
 - **Single HTTP entrypoint**: every Synology call goes through `SynoClient.{request,requestRaw,requestForm,requestStreamForm}`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths. Use `request` for JSON envelopes, `requestRaw` for binary downloads, `requestForm` for in-memory multipart, and `requestStreamForm` when the request body has a single large file part that must be streamed off disk.
 - **Domain packages**: one workspace package per Synology service (`@overworks/syno-file`, `@overworks/syno-download`, …). They depend on `@overworks/syno-core` via `workspace:*`, expose function-style APIs (`list(client, …)`), and are consumed by `cli` under matching command groups (`syno file …`, `syno download …`).
 - **Error model**: `SynoApiError { code, api, method, isSessionExpired }`. Auth codes get auth-aware messages via `describeSynoErrorCode`. Don't swallow these — bubble them up.
-- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting. Command-group names mirror DSM's built-in aliases — `file` for `SYNO.FileStation.*` and `download` for `SYNO.DownloadStation.Task`. Auth/session lives under `syno auth` (login/logout/list/show/use/rm) — there is no top-level `syno login`.
+- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting. Command-group names mirror DSM's built-in aliases — `file` for `SYNO.FileStation.*` and `download` for `SYNO.DownloadStation.Task`. `SYNO.Core.System.*` has no short DSM alias, so its group is named after the API family: `system` (info/usage/storage). Auth/session lives under `syno auth` (login/logout/list/show/use/rm) — there is no top-level `syno login`.
 - **Profiles**: every non-auth command accepts `--profile <name>` (default: current). `--host <url>` is still available as a one-shot URL override on the same profile (useful pre-login or for peeking).
 - **Credentials**: `~/.config/syno-cli/config.json` is `{current, profiles: {<name>: {host, account, sid, savedAt}}}` at mode 0600. Only `packages/cli/src/config.ts` reads/writes it. The schema has no `version` field — malformed shapes are rejected, not migrated. Never log passwords or sids (the `auth show` command masks the sid to `****<last 4>`).
 - **`core` has no runtime deps.** Add new runtime deps to `cli`. If you need a parser/util in `core`, write it.

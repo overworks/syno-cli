@@ -35,6 +35,9 @@ importers:
       '@overworks/syno-file':
         specifier: workspace:*
         version: link:../file
+      '@overworks/syno-system':
+        specifier: workspace:*
+        version: link:../system
       commander:
         specifier: 12.1.0
         version: 12.1.0
@@ -48,6 +51,12 @@ importers:
         version: link:../core
 
   packages/file:
+    dependencies:
+      '@overworks/syno-core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/system:
     dependencies:
       '@overworks/syno-core':
         specifier: workspace:*

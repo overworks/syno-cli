@@ -59,6 +59,13 @@ node packages/cli/dist/index.js download pause  dbid_1
 node packages/cli/dist/index.js download resume dbid_1
 node packages/cli/dist/index.js download rm     dbid_1 --force-complete
 
+# System status (SYNO.Core.System.* + storage) — all read-only
+node packages/cli/dist/index.js system info                     # model, firmware, uptime, temperature
+node packages/cli/dist/index.js system usage                    # live CPU / memory / network / disk
+node packages/cli/dist/index.js system storage                  # volumes (capacity + health)
+node packages/cli/dist/index.js system storage --disks          # physical disks (temp, SMART)
+node packages/cli/dist/index.js system usage --json | jq
+
 # Every non-auth command accepts --profile <name> to override the current profile for one call
 node packages/cli/dist/index.js --profile work file list
 
@@ -79,6 +86,7 @@ packages/
   core/               # @overworks/syno-core      — base SDK (no runtime deps)
   file/               # @overworks/syno-file      — SYNO.FileStation.* wrappers
   download/           # @overworks/syno-download  — SYNO.DownloadStation.Task wrappers
+  system/             # @overworks/syno-system    — SYNO.Core.System.* + storage wrappers
   cli/                # @overworks/syno-cli       — `syno` binary
 ```
 
