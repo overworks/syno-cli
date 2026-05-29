@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { clientFromConfig } from "../src/client-from-config.js";
+import { activeProfile, clientFromConfig } from "../src/client-from-config.js";
 import { upsertProfile, type SynoProfile } from "../src/config.js";
 
 const sample = (overrides: Partial<SynoProfile> = {}): SynoProfile => ({
@@ -115,5 +115,23 @@ describe("clientFromConfig — SYNO_PROFILE env var", () => {
     await upsertProfile("default", sample());
     process.env["SYNO_PROFILE"] = "ghost";
     await expect(clientFromConfig()).rejects.toThrow(/Profile "ghost" not found/);
+  });
+});
+
+describe("activeProfile tracking", () => {
+  it("records the resolved profile name (current and named)", async () => {
+    await upsertProfile("home", sample());
+    await upsertProfile("work", sample({ host: "https://nas.work:5001", sid: "sid-work" }));
+
+    await clientFromConfig();
+    expect(activeProfile()).toBe("home");
+
+    await clientFromConfig({ profile: "work" });
+    expect(activeProfile()).toBe("work");
+  });
+
+  it("is undefined when only --host is used (no stored profile)", async () => {
+    await clientFromConfig({ host: "https://peek:5001" });
+    expect(activeProfile()).toBeUndefined();
   });
 });

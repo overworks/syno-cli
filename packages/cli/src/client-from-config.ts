@@ -6,6 +6,18 @@ export interface ClientFromConfigOptions {
   profile?: string;
 }
 
+/**
+ * Name of the profile resolved by the most recent {@link clientFromConfig}
+ * call (or `undefined` if it ran against a bare `--host`). The CLI is a
+ * single-shot process, so the error boundary in `index.ts` reads this to make
+ * a session-expiry hint name the right profile.
+ */
+let activeProfileName: string | undefined;
+
+export function activeProfile(): string | undefined {
+  return activeProfileName;
+}
+
 export async function clientFromConfig(opts: ClientFromConfigOptions = {}): Promise<{
   client: SynoClient;
   configured: boolean;
@@ -22,6 +34,7 @@ export async function clientFromConfig(opts: ClientFromConfigOptions = {}): Prom
         `Profile "${selected}" not found. Run \`syno auth list\` to see configured profiles.`,
       );
     }
+    activeProfileName = found.name;
     const host = opts.host ?? found.profile.host;
     return {
       client: new SynoClient({ baseUrl: host, sid: found.profile.sid }),
@@ -38,6 +51,7 @@ export async function clientFromConfig(opts: ClientFromConfigOptions = {}): Prom
       "No host configured. Run `syno auth login --host <url>` first, or pass --host.",
     );
   }
+  activeProfileName = current?.profile ? current.name : undefined;
   return {
     client: new SynoClient({ baseUrl: host, sid: current?.profile?.sid }),
     configured: Boolean(cfg),

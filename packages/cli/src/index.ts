@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { SynoApiError } from "@overworks/syno-core";
+import { activeProfile } from "./client-from-config.js";
+import { sessionExpiryHint } from "./session-hint.js";
 import { authCommand } from "./commands/auth/index.js";
 import { apiCommand } from "./commands/api/list.js";
 import { fileCommand } from "./commands/file/index.js";
@@ -32,6 +34,8 @@ async function main(): Promise<void> {
 main().catch((err: unknown) => {
   if (err instanceof SynoApiError) {
     process.stderr.write(`${err.message}\n`);
+    const hint = sessionExpiryHint(err, activeProfile());
+    if (hint) process.stderr.write(`${hint}\n`);
     process.exit(1);
   }
   if (err instanceof Error) {

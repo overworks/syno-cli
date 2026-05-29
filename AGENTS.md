@@ -76,7 +76,8 @@ packages/
     src/
       index.ts                 # commander entrypoint + interactive hook
       config.ts                # named-profile config CRUD (loadConfig / upsertProfile / removeProfile / setCurrent / listProfiles)
-      client-from-config.ts    # {host?, profile?} → SynoClient
+      client-from-config.ts    # {host?, profile?} → SynoClient; tracks activeProfile()
+      session-hint.ts          # sessionExpiryHint: re-login command for 105/106/107/119
       output.ts                # printTable / printJson
       prompt.ts                # readline + raw-mode password prompt
       interactive.ts           # STUB — interactive mode not implemented yet
@@ -120,7 +121,7 @@ packages/
 ## Things to avoid
 
 - Don't introduce a second HTTP client or bypass `SynoClient.request` — `_sid`, path resolution, and error normalization all live there.
-- Don't add automatic retries on `SynoApiError`. Session-expiry (105/106/107/119) should surface a re-login hint, not silently re-auth — the password isn't kept in memory.
+- Don't add automatic retries on `SynoApiError`. Session-expiry (105/106/107/119) surfaces a profile-aware re-login hint at the CLI error boundary (`sessionExpiryHint` + `activeProfile()`), not a silent re-auth — the password isn't kept in memory.
 - Don't mutate `~/.config/syno-cli/config.json` from anywhere other than `config.ts`.
 - Don't paper over Synology error codes with generic messages; extend the tables in `errors.ts` instead.
 - Don't commit `dist/`, `.turbo/`, or `node_modules/` (already gitignored).
