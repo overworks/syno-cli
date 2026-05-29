@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import { Command } from "commander";
 import { SynoApiError } from "@overworks/syno-core";
 import { activeProfile } from "./client-from-config.js";
@@ -11,12 +12,20 @@ import { systemCommand } from "./commands/system/index.js";
 import { completionCommand } from "./commands/completion.js";
 import { runInteractive } from "./interactive.js";
 
+// Read the version from package.json at runtime so it always matches the
+// published version. `dist/index.js` sits next to package.json both in the
+// repo (packages/cli/) and in the installed package, so `../package.json`
+// resolves in dev (tsx on src/) and after build alike.
+const { version } = JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+) as { version: string };
+
 async function main(): Promise<void> {
   const program = new Command();
   program
     .name("syno")
     .description("CLI for the Synology DSM Web API")
-    .version("0.0.0")
+    .version(version)
     .action(async () => {
       await runInteractive();
     });
