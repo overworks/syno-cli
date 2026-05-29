@@ -16,99 +16,105 @@ This is a pnpm + Turborepo monorepo containing:
 
 ## Status
 
-Early. Currently implements `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, and `SYNO.DownloadStation.Task`. Other domains (Surveillance, Photo, …) will land as additional workspace packages.
+Covers `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, `SYNO.DownloadStation.Task`,
+`SYNO.Core.System.*` + storage, `SYNO.SurveillanceStation.*`, `SYNO.Foto.*`, `SYNO.AudioStation.*`,
+and `SYNO.Core.SyslogClient.*`. More domains (Video, …) will land as additional workspace packages.
 
 ## Requirements
 
 - Node.js >= 20
-- pnpm >= 11
 
-## Install & build
+## Install
 
 ```bash
-pnpm install
-pnpm build
+npm install -g @overworks/syno-cli   # provides the `syno` binary
+syno --help
 ```
+
+The SDK packages can be installed individually too, e.g. `npm install @overworks/syno-core @overworks/syno-file`.
+
+To build from source instead, see [Development](#development).
 
 ## Usage
 
 ```bash
 # Authenticate against your DSM (stores under profile "default" unless --profile is given)
-node packages/cli/dist/index.js auth login --host https://nas.example:5001
-node packages/cli/dist/index.js auth login --profile work --host https://nas.work:5001
+syno auth login --host https://nas.example:5001
+syno auth login --profile work --host https://nas.work:5001
 
 # Inspect / switch / drop profiles
-node packages/cli/dist/index.js auth list
-node packages/cli/dist/index.js auth show           # current profile (sid masked)
-node packages/cli/dist/index.js auth use work       # switch the current profile
-node packages/cli/dist/index.js auth logout         # log out current profile
-node packages/cli/dist/index.js auth logout --all   # log out every profile and drop config
-node packages/cli/dist/index.js auth rm work        # forget locally without calling DSM logout
+syno auth list
+syno auth show           # current profile (sid masked)
+syno auth use work       # switch the current profile
+syno auth logout         # log out current profile
+syno auth logout --all   # log out every profile and drop config
+syno auth rm work        # forget locally without calling DSM logout
 
 # List the APIs your DSM exposes
-node packages/cli/dist/index.js api list
-node packages/cli/dist/index.js api list --query FileStation --json | jq
+syno api list
+syno api list --query FileStation --json | jq
 
 # Browse and move files (SYNO.FileStation.*)
-node packages/cli/dist/index.js file list                       # shared folders
-node packages/cli/dist/index.js file list /home/me              # directory contents
-node packages/cli/dist/index.js file mkdir /home/me/new --parents
-node packages/cli/dist/index.js file upload ./report.pdf /home/me --overwrite
-node packages/cli/dist/index.js file download /home/me/photo.jpg -o ./photo.jpg
-node packages/cli/dist/index.js file rm /home/me/old.txt --recursive
+syno file list                       # shared folders
+syno file list /home/me              # directory contents
+syno file mkdir /home/me/new --parents
+syno file upload ./report.pdf /home/me --overwrite
+syno file download /home/me/photo.jpg -o ./photo.jpg
+syno file rm /home/me/old.txt --recursive
 
 # Download Station (SYNO.DownloadStation.Task)
-node packages/cli/dist/index.js download list
-node packages/cli/dist/index.js download add "magnet:?xt=urn:btih:..." --destination home/downloads
-node packages/cli/dist/index.js download pause  dbid_1
-node packages/cli/dist/index.js download resume dbid_1
-node packages/cli/dist/index.js download rm     dbid_1 --force-complete
+syno download list
+syno download add "magnet:?xt=urn:btih:..." --destination home/downloads
+syno download pause  dbid_1
+syno download resume dbid_1
+syno download rm     dbid_1 --force-complete
 
 # System status (SYNO.Core.System.* + storage) — all read-only
-node packages/cli/dist/index.js system info                     # model, firmware, uptime, temperature
-node packages/cli/dist/index.js system usage                    # live CPU / memory / network / disk
-node packages/cli/dist/index.js system storage                  # volumes (capacity + health)
-node packages/cli/dist/index.js system storage --disks          # physical disks (temp, SMART)
-node packages/cli/dist/index.js system usage --json | jq
+syno system info                     # model, firmware, uptime, temperature
+syno system usage                    # live CPU / memory / network / disk
+syno system storage                  # volumes (capacity + health)
+syno system storage --disks          # physical disks (temp, SMART)
+syno system usage --json | jq
 
 # Surveillance Station (SYNO.SurveillanceStation.*)
-node packages/cli/dist/index.js surveillance info               # SS version + capacity
-node packages/cli/dist/index.js surveillance camera list        # configured cameras
-node packages/cli/dist/index.js surveillance camera snapshot 1 -o front.jpg   # JPEG snapshot
-node packages/cli/dist/index.js surveillance recording list --camera 1,2
+syno surveillance info               # SS version + capacity
+syno surveillance camera list        # configured cameras
+syno surveillance camera snapshot 1 -o front.jpg   # JPEG snapshot
+syno surveillance recording list --camera 1,2
 
 # Synology Photos (SYNO.Foto.*)
-node packages/cli/dist/index.js photo album list
-node packages/cli/dist/index.js photo list --album 3 --type photo
-node packages/cli/dist/index.js photo download 42 -o vacation.jpg
+syno photo album list
+syno photo list --album 3 --type photo
+syno photo download 42 -o vacation.jpg
 
 # Audio Station (SYNO.AudioStation.*)
-node packages/cli/dist/index.js audio info
-node packages/cli/dist/index.js audio song list --limit 50
-node packages/cli/dist/index.js audio album list
-node packages/cli/dist/index.js audio playlist list
-node packages/cli/dist/index.js audio cover music_1 -o art.jpg
+syno audio info
+syno audio song list --limit 50
+syno audio album list
+syno audio playlist list
+syno audio cover music_1 -o art.jpg
 
 # System log (SYNO.Core.SyslogClient.*)
-node packages/cli/dist/index.js log list --level error --limit 100
-node packages/cli/dist/index.js log list --type connection --keyword login
-node packages/cli/dist/index.js log status
+syno log list --level error --limit 100
+syno log list --type connection --keyword login
+syno log status
 
 # Every non-auth command accepts --profile <name> to override the current profile for one call
-node packages/cli/dist/index.js --profile work file list
+syno --profile work file list
 
 # Or set SYNO_PROFILE to switch the default profile for a shell (precedence: --profile > $SYNO_PROFILE > current)
-SYNO_PROFILE=work node packages/cli/dist/index.js file list
+SYNO_PROFILE=work syno file list
 
 # Shell completion (bash or zsh)
-node packages/cli/dist/index.js completion bash >> ~/.bashrc-syno      # then `source ~/.bashrc-syno`
-node packages/cli/dist/index.js completion zsh  > ~/.zsh/completions/_syno
+syno completion bash >> ~/.bashrc-syno      # then `source ~/.bashrc-syno`
+syno completion zsh  > ~/.zsh/completions/_syno
 ```
 
 Profiles are stored at `~/.config/syno-cli/config.json` (mode `0600`) as
 `{current, profiles: {<name>: {host, account, sid, savedAt}}}`.
 
-After `pnpm build` you can add `packages/cli/dist/index.js` to your `PATH` (or `pnpm link --global` from `packages/cli`) so the binary is just `syno`.
+Running from a source checkout instead of a global install? Use `node packages/cli/dist/index.js <cmd>`
+after `pnpm build`, or `pnpm --filter @overworks/syno-cli dev` for watch mode.
 
 ## Layout
 
@@ -128,10 +134,15 @@ packages/
 ## Development
 
 ```bash
+pnpm install
+pnpm build                       # turbo build across packages
 pnpm test                        # vitest across packages
 pnpm typecheck
 pnpm --filter @overworks/syno-cli dev  # tsx watch on the CLI entry
+node packages/cli/dist/index.js --help # run the locally built CLI
 ```
+
+Releases go through Changesets — see [RELEASING.md](./RELEASING.md).
 
 ## License
 
