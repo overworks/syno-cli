@@ -1,6 +1,6 @@
 {
   "name": "@overworks/syno-file",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Synology File Station (SYNO.FileStation.*) client built on @overworks/syno-core",
   "license": "MIT",
   "author": "Minhyung Park",

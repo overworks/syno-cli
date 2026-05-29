@@ -1,6 +1,6 @@
 {
   "name": "@overworks/syno-cli",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Command-line interface for the Synology DSM Web API",
   "license": "MIT",
   "author": "Minhyung Park",

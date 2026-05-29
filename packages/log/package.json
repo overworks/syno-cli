@@ -1,6 +1,6 @@
 {
   "name": "@overworks/syno-log",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Synology system log (SYNO.Core.SyslogClient.*) client built on @overworks/syno-core",
   "license": "MIT",
   "author": "Minhyung Park",
