@@ -1,5 +1,17 @@
 # @overworks/syno-cli
 
+## 0.1.2
+
+### Patch Changes
+
+- 264520a: Fix `syno --version` reporting `0.0.0`: the version is now read from
+  package.json at runtime instead of being hardcoded, so it always matches the
+  published version.
+  - @overworks/syno-core@0.1.2
+  - @overworks/syno-ds@0.1.2
+  - @overworks/syno-file@0.1.2
+  - @overworks/syno-system@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
