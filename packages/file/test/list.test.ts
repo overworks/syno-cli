@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { SynoClient } from "@syno-cli/core";
+import { SynoClient } from "@overworks/syno-core";
 import { list, listShares } from "../src/index.js";
 
 function jsonResponse(body: unknown): Response {

@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { list, listShares } from "@syno-cli/file-station";
+import { list, listShares } from "@overworks/syno-file";
 import { clientFromConfig } from "../../client-from-config.js";
 import { printJson, printTable } from "../../output.js";
 

@@ -1,5 +1,5 @@
 {
-  "name": "@syno-cli/cli",
+  "name": "@overworks/syno-cli",
   "version": "0.0.0",
   "description": "Command-line interface for the Synology DSM Web API",
   "license": "MIT",
@@ -21,9 +21,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@syno-cli/core": "workspace:*",
-    "@syno-cli/download-station": "workspace:*",
-    "@syno-cli/file-station": "workspace:*",
+    "@overworks/syno-core": "workspace:*",
+    "@overworks/syno-download": "workspace:*",
+    "@overworks/syno-file": "workspace:*",
     "commander": "12.1.0"
   }
 }

@@ -1,4 +1,4 @@
-import type { SynoClient } from "@syno-cli/core";
+import type { SynoClient } from "@overworks/syno-core";
 
 export interface StartDeleteArgs {
   path: string | string[];

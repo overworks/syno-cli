@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { SynoClient } from "@syno-cli/core";
+import { SynoClient } from "@overworks/syno-core";
 import { del } from "../src/index.js";
 
 describe("del (blocking wrapper)", () => {

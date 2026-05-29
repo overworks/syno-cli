@@ -4,10 +4,10 @@ TypeScript SDK and command-line tool for the Synology DSM Web API.
 
 This is a pnpm + Turborepo monorepo containing:
 
-- **`@syno-cli/core`** — small, dependency-free SDK on top of `fetch`. Handles SID-based auth, automatic `SYNO.API.Info` path resolution, and normalized errors.
-- **`@syno-cli/file-station`** — File Station wrappers (list / mkdir / rm / upload / download) on top of `core`.
-- **`@syno-cli/download-station`** — Download Station task wrappers (list / add / pause / resume / rm) on top of `core`.
-- **`@syno-cli/cli`** (`syno` binary) — [commander](https://github.com/tj/commander.js) CLI built on top of `core` and the domain packages.
+- **`@overworks/syno-core`** — small, dependency-free SDK on top of `fetch`. Handles SID-based auth, automatic `SYNO.API.Info` path resolution, and normalized errors.
+- **`@overworks/syno-file`** — File Station wrappers (list / mkdir / rm / upload / download) on top of `syno-core`.
+- **`@overworks/syno-download`** — Download Station task wrappers (list / add / pause / resume / rm) on top of `syno-core`.
+- **`@overworks/syno-cli`** (`syno` binary) — [commander](https://github.com/tj/commander.js) CLI built on top of `syno-core` and the domain packages.
 
 ## Status
 
@@ -62,10 +62,10 @@ After `pnpm build` you can add `packages/cli/dist/index.js` to your `PATH` (or `
 
 ```
 packages/
-  core/               # @syno-cli/core              — base SDK (no runtime deps)
-  file-station/       # @syno-cli/file-station      — SYNO.FileStation.* wrappers
-  download-station/   # @syno-cli/download-station  — SYNO.DownloadStation.Task wrappers
-  cli/                # @syno-cli/cli               — `syno` binary
+  core/               # @overworks/syno-core      — base SDK (no runtime deps)
+  file/               # @overworks/syno-file      — SYNO.FileStation.* wrappers
+  download/           # @overworks/syno-download  — SYNO.DownloadStation.Task wrappers
+  cli/                # @overworks/syno-cli       — `syno` binary
 ```
 
 ## Development
@@ -73,7 +73,7 @@ packages/
 ```bash
 pnpm test                        # vitest across packages
 pnpm typecheck
-pnpm --filter @syno-cli/cli dev  # tsx watch on the CLI entry
+pnpm --filter @overworks/syno-cli dev  # tsx watch on the CLI entry
 ```
 
 ## License

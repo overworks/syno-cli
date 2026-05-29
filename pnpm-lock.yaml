@@ -26,30 +26,30 @@ importers:
 
   packages/cli:
     dependencies:
-      '@syno-cli/core':
+      '@overworks/syno-core':
         specifier: workspace:*
         version: link:../core
-      '@syno-cli/download-station':
+      '@overworks/syno-download':
         specifier: workspace:*
-        version: link:../download-station
-      '@syno-cli/file-station':
+        version: link:../download
+      '@overworks/syno-file':
         specifier: workspace:*
-        version: link:../file-station
+        version: link:../file
       commander:
         specifier: 12.1.0
         version: 12.1.0
 
   packages/core: {}
 
-  packages/download-station:
+  packages/download:
     dependencies:
-      '@syno-cli/core':
+      '@overworks/syno-core':
         specifier: workspace:*
         version: link:../core
 
-  packages/file-station:
+  packages/file:
     dependencies:
-      '@syno-cli/core':
+      '@overworks/syno-core':
         specifier: workspace:*
         version: link:../core
 

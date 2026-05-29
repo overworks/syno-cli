@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { SynoApiError, logout } from "@syno-cli/core";
+import { SynoApiError, logout } from "@overworks/syno-core";
 import { clientFromConfig } from "../client-from-config.js";
 import { deleteConfig } from "../config.js";
 

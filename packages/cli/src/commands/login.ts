@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { SynoClient, login } from "@syno-cli/core";
+import { SynoClient, login } from "@overworks/syno-core";
 import { saveConfig } from "../config.js";
 import { promptLine, promptPassword } from "../prompt.js";
 

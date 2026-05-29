@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { del } from "@syno-cli/file-station";
+import { del } from "@overworks/syno-file";
 import { clientFromConfig } from "../../client-from-config.js";
 
 interface RmOptions {

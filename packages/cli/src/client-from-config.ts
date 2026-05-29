@@ -1,4 +1,4 @@
-import { SynoClient } from "@syno-cli/core";
+import { SynoClient } from "@overworks/syno-core";
 import { loadConfig } from "./config.js";
 
 export async function clientFromConfig(hostOverride?: string): Promise<{

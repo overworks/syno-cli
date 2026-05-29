@@ -1,7 +1,7 @@
 {
-  "name": "@syno-cli/download-station",
+  "name": "@overworks/syno-download",
   "version": "0.0.0",
-  "description": "Synology Download Station (SYNO.DownloadStation.*) client built on @syno-cli/core",
+  "description": "Synology Download Station (SYNO.DownloadStation.*) client built on @overworks/syno-core",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,6 +26,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@syno-cli/core": "workspace:*"
+    "@overworks/syno-core": "workspace:*"
   }
 }

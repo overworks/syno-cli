@@ -1,7 +1,7 @@
 import { basename } from "node:path";
 import { readFile, stat } from "node:fs/promises";
 import { Command } from "commander";
-import { upload } from "@syno-cli/file-station";
+import { upload } from "@overworks/syno-file";
 import { clientFromConfig } from "../../client-from-config.js";
 
 interface UploadOptions {

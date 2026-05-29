@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { deleteTasks } from "@syno-cli/download-station";
+import { deleteTasks } from "@overworks/syno-download";
 import { clientFromConfig } from "../../client-from-config.js";
 
 interface RmOptions {

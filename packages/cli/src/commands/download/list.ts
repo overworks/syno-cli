@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { listTasks } from "@syno-cli/download-station";
+import { listTasks } from "@overworks/syno-download";
 import { clientFromConfig } from "../../client-from-config.js";
 import { printJson, printTable } from "../../output.js";
 

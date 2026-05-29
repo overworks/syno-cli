@@ -1,7 +1,7 @@
 {
-  "name": "@syno-cli/file-station",
+  "name": "@overworks/syno-file",
   "version": "0.0.0",
-  "description": "Synology File Station (SYNO.FileStation.*) client built on @syno-cli/core",
+  "description": "Synology File Station (SYNO.FileStation.*) client built on @overworks/syno-core",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,6 +26,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@syno-cli/core": "workspace:*"
+    "@overworks/syno-core": "workspace:*"
   }
 }

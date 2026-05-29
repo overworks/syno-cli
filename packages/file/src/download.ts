@@ -1,4 +1,4 @@
-import type { SynoClient } from "@syno-cli/core";
+import type { SynoClient } from "@overworks/syno-core";
 
 export interface DownloadArgs {
   /** Remote file path. Single path or array (DSM accepts both). */

@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { queryApiInfo } from "@syno-cli/core";
+import { queryApiInfo } from "@overworks/syno-core";
 import { clientFromConfig } from "../../client-from-config.js";
 import { printJson, printTable } from "../../output.js";
 

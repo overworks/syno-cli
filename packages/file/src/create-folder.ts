@@ -1,4 +1,4 @@
-import type { SynoClient } from "@syno-cli/core";
+import type { SynoClient } from "@overworks/syno-core";
 import type { FileEntry } from "./types.js";
 
 export interface CreateFolderArgs {

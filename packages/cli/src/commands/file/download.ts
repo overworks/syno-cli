@@ -3,7 +3,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createWriteStream } from "node:fs";
 import { Command } from "commander";
-import { download } from "@syno-cli/file-station";
+import { download } from "@overworks/syno-file";
 import { clientFromConfig } from "../../client-from-config.js";
 
 interface DownloadOptions {

@@ -1,6 +1,6 @@
 import { posix as path } from "node:path";
 import { Command } from "commander";
-import { createFolder } from "@syno-cli/file-station";
+import { createFolder } from "@overworks/syno-file";
 import { clientFromConfig } from "../../client-from-config.js";
 import { printJson } from "../../output.js";
 

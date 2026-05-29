@@ -1,4 +1,4 @@
-import type { SynoClient } from "@syno-cli/core";
+import type { SynoClient } from "@overworks/syno-core";
 
 export interface UploadArgs {
   /** Destination folder path on the DSM (parent of the new file). */

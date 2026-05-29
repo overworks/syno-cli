@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { SynoApiError } from "@syno-cli/core";
+import { SynoApiError } from "@overworks/syno-core";
 import { loginCommand } from "./commands/login.js";
 import { logoutCommand } from "./commands/logout.js";
 import { apiCommand } from "./commands/api/list.js";
