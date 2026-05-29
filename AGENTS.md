@@ -124,7 +124,3 @@ packages/
 - Don't mutate `~/.config/syno-cli/config.json` from anywhere other than `config.ts`.
 - Don't paper over Synology error codes with generic messages; extend the tables in `errors.ts` instead.
 - Don't commit `dist/`, `.turbo/`, or `node_modules/` (already gitignored).
-
-## Reference: relevant planning notes
-
-The original bootstrap plan lives at `~/.claude/plans/synology-web-api-velvety-mountain.md` on the maintainer's machine — useful background but not normative; this file is the source of truth for current state.
