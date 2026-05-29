@@ -3,7 +3,7 @@ import { list, listShares } from "@syno-cli/file-station";
 import { clientFromConfig } from "../../client-from-config.js";
 import { printJson, printTable } from "../../output.js";
 
-interface FsListOptions {
+interface FileListOptions {
   host?: string;
   json?: boolean;
   limit?: string;
@@ -27,7 +27,7 @@ function toIso(mtime: number | undefined): string {
   return new Date(mtime * 1000).toISOString().replace("T", " ").slice(0, 19);
 }
 
-export function fsListCommand(): Command {
+export function fileListCommand(): Command {
   return new Command("list")
     .description("List shared folders (no arg) or the contents of a directory")
     .argument("[path]", "Remote folder path; omit to list shares")
@@ -35,7 +35,7 @@ export function fsListCommand(): Command {
     .option("--json", "Emit JSON instead of a table")
     .option("--limit <n>", "Max entries per page")
     .option("--offset <n>", "Offset for paging")
-    .action(async (path: string | undefined, opts: FsListOptions) => {
+    .action(async (path: string | undefined, opts: FileListOptions) => {
       const { client } = await clientFromConfig(opts.host);
       const limit = opts.limit ? Number(opts.limit) : undefined;
       const offset = opts.offset ? Number(opts.offset) : undefined;

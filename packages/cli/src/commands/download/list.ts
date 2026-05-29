@@ -3,7 +3,7 @@ import { listTasks } from "@syno-cli/download-station";
 import { clientFromConfig } from "../../client-from-config.js";
 import { printJson, printTable } from "../../output.js";
 
-interface DlListOptions {
+interface DownloadListOptions {
   host?: string;
   json?: boolean;
   limit?: string;
@@ -27,14 +27,14 @@ function pct(downloaded: number | undefined, total: number): string {
   return `${((downloaded / total) * 100).toFixed(1)}%`;
 }
 
-export function dlListCommand(): Command {
+export function downloadListCommand(): Command {
   return new Command("list")
     .description("List Download Station tasks")
     .option("--host <url>", "Override the configured DSM URL")
     .option("--json", "Emit JSON instead of a table")
     .option("--limit <n>", "Max tasks per page")
     .option("--offset <n>", "Offset for paging")
-    .action(async (opts: DlListOptions) => {
+    .action(async (opts: DownloadListOptions) => {
       const { client } = await clientFromConfig(opts.host);
       const page = await listTasks(client, {
         limit: opts.limit ? Number(opts.limit) : undefined,

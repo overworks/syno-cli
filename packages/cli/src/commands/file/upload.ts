@@ -12,7 +12,7 @@ interface UploadOptions {
   name?: string;
 }
 
-export function fsUploadCommand(): Command {
+export function fileUploadCommand(): Command {
   return new Command("upload")
     .description("Upload a local file into a remote directory")
     .argument("<local>", "Path to local file")

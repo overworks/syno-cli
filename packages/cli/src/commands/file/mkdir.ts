@@ -10,7 +10,7 @@ interface MkdirOptions {
   parents?: boolean;
 }
 
-export function fsMkdirCommand(): Command {
+export function fileMkdirCommand(): Command {
   return new Command("mkdir")
     .description("Create a folder on the DSM")
     .argument("<path>", "Absolute remote path of the folder to create")

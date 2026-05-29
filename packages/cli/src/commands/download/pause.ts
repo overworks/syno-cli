@@ -12,7 +12,7 @@ function summarize(results: Array<{ id: string; error: number }>): string {
     .join("\n");
 }
 
-export function dlPauseCommand(): Command {
+export function downloadPauseCommand(): Command {
   return new Command("pause")
     .description("Pause one or more tasks")
     .argument("<ids...>", "Task IDs to pause")
@@ -24,7 +24,7 @@ export function dlPauseCommand(): Command {
     });
 }
 
-export function dlResumeCommand(): Command {
+export function downloadResumeCommand(): Command {
   return new Command("resume")
     .description("Resume one or more paused tasks")
     .argument("<ids...>", "Task IDs to resume")

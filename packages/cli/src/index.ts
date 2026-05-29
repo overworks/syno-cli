@@ -4,8 +4,8 @@ import { SynoApiError } from "@syno-cli/core";
 import { loginCommand } from "./commands/login.js";
 import { logoutCommand } from "./commands/logout.js";
 import { apiCommand } from "./commands/api/list.js";
-import { fsCommand } from "./commands/fs/index.js";
-import { dlCommand } from "./commands/dl/index.js";
+import { fileCommand } from "./commands/file/index.js";
+import { downloadCommand } from "./commands/download/index.js";
 import { runInteractive } from "./interactive.js";
 
 async function main(): Promise<void> {
@@ -21,8 +21,8 @@ async function main(): Promise<void> {
   program.addCommand(loginCommand());
   program.addCommand(logoutCommand());
   program.addCommand(apiCommand());
-  program.addCommand(fsCommand());
-  program.addCommand(dlCommand());
+  program.addCommand(fileCommand());
+  program.addCommand(downloadCommand());
 
   await program.parseAsync(process.argv);
 }

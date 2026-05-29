@@ -74,11 +74,11 @@ packages/
         login.ts
         logout.ts
         api/list.ts
-        fs/
-          index.ts             # `syno fs` group
+        file/
+          index.ts             # `syno file` group (DSM alias for FileStation)
           list.ts mkdir.ts rm.ts upload.ts download.ts
-        dl/
-          index.ts             # `syno dl` group
+        download/
+          index.ts             # `syno download` group (DSM alias for DownloadStation)
           list.ts add.ts pause.ts rm.ts
 ```
 
@@ -86,9 +86,9 @@ packages/
 
 - **ESM only** (`"type": "module"`). Import other source files with the `.js` suffix from TypeScript — NodeNext resolves them correctly after emit.
 - **Single HTTP entrypoint**: every Synology call goes through `SynoClient.{request,requestRaw,requestForm}`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths. Use `request` for JSON envelopes, `requestRaw` for binary downloads, `requestForm` for multipart uploads.
-- **Domain packages**: one workspace package per Synology service (`@syno-cli/file-station`, planned `@syno-cli/download-station`, …). They depend on `@syno-cli/core` via `workspace:*`, expose function-style APIs (`list(client, …)`), and are consumed by `cli` under matching command groups (`syno fs …`).
+- **Domain packages**: one workspace package per Synology service (`@syno-cli/file-station`, `@syno-cli/download-station`, …). They depend on `@syno-cli/core` via `workspace:*`, expose function-style APIs (`list(client, …)`), and are consumed by `cli` under matching command groups (`syno file …`, `syno download …`).
 - **Error model**: `SynoApiError { code, api, method, isSessionExpired }`. Auth codes get auth-aware messages via `describeSynoErrorCode`. Don't swallow these — bubble them up.
-- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting.
+- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting. Command-group names mirror DSM's built-in aliases — `file` for `SYNO.FileStation.*` and `download` for `SYNO.DownloadStation.Task`.
 - **Credentials**: only `packages/cli/src/config.ts` reads/writes `~/.config/syno-cli/config.json`. Keep mode 0600. Never log passwords or sids.
 - **`core` has no runtime deps.** Add new runtime deps to `cli`. If you need a parser/util in `core`, write it.
 - **Tests don't hit the network.** Inject a `fetch` into `SynoClient({ fetch })` and assert on the URL + body.

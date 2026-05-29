@@ -12,7 +12,7 @@ interface DownloadOptions {
   force?: boolean;
 }
 
-export function fsDownloadCommand(): Command {
+export function fileDownloadCommand(): Command {
   return new Command("download")
     .description("Download a remote file to local disk (or stdout with -o -)")
     .argument("<remotePath>", "Remote file path on the DSM")

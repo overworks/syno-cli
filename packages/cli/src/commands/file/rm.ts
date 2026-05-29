@@ -8,7 +8,7 @@ interface RmOptions {
   quiet?: boolean;
 }
 
-export function fsRmCommand(): Command {
+export function fileRmCommand(): Command {
   return new Command("rm")
     .description("Delete one or more remote paths")
     .argument("<paths...>", "Remote paths to delete")

@@ -10,7 +10,7 @@ interface AddOptions {
   unzipPassword?: string;
 }
 
-export function dlAddCommand(): Command {
+export function downloadAddCommand(): Command {
   return new Command("add")
     .description("Queue one or more downloads (magnet, http, ftp, …)")
     .argument("<uri...>", "URIs / magnet links to add")

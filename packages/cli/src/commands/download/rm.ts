@@ -7,7 +7,7 @@ interface RmOptions {
   forceComplete?: boolean;
 }
 
-export function dlRmCommand(): Command {
+export function downloadRmCommand(): Command {
   return new Command("rm")
     .description("Remove one or more tasks")
     .argument("<ids...>", "Task IDs to remove")

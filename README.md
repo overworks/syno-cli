@@ -36,19 +36,19 @@ node packages/cli/dist/index.js api list
 node packages/cli/dist/index.js api list --query FileStation --json | jq
 
 # Browse and move files (SYNO.FileStation.*)
-node packages/cli/dist/index.js fs list                       # shared folders
-node packages/cli/dist/index.js fs list /home/me              # directory contents
-node packages/cli/dist/index.js fs mkdir /home/me/new --parents
-node packages/cli/dist/index.js fs upload ./report.pdf /home/me --overwrite
-node packages/cli/dist/index.js fs download /home/me/photo.jpg -o ./photo.jpg
-node packages/cli/dist/index.js fs rm /home/me/old.txt --recursive
+node packages/cli/dist/index.js file list                       # shared folders
+node packages/cli/dist/index.js file list /home/me              # directory contents
+node packages/cli/dist/index.js file mkdir /home/me/new --parents
+node packages/cli/dist/index.js file upload ./report.pdf /home/me --overwrite
+node packages/cli/dist/index.js file download /home/me/photo.jpg -o ./photo.jpg
+node packages/cli/dist/index.js file rm /home/me/old.txt --recursive
 
 # Download Station (SYNO.DownloadStation.Task)
-node packages/cli/dist/index.js dl list
-node packages/cli/dist/index.js dl add "magnet:?xt=urn:btih:..." --destination home/downloads
-node packages/cli/dist/index.js dl pause  dbid_1
-node packages/cli/dist/index.js dl resume dbid_1
-node packages/cli/dist/index.js dl rm     dbid_1 --force-complete
+node packages/cli/dist/index.js download list
+node packages/cli/dist/index.js download add "magnet:?xt=urn:btih:..." --destination home/downloads
+node packages/cli/dist/index.js download pause  dbid_1
+node packages/cli/dist/index.js download resume dbid_1
+node packages/cli/dist/index.js download rm     dbid_1 --force-complete
 
 # Drop the stored session
 node packages/cli/dist/index.js logout
