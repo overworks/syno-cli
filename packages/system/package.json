@@ -1,6 +1,6 @@
 {
   "name": "@overworks/syno-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Synology system status (SYNO.Core.System.*, SYNO.Storage.CGI.Storage) client built on @overworks/syno-core",
   "license": "MIT",
   "author": "Minhyung Park",
