@@ -13,11 +13,12 @@ TypeScript pnpm + Turborepo monorepo for accessing the Synology DSM Web API.
 - `packages/surveillance` — `@overworks/syno-surveillance`: Surveillance Station wrappers (`getInfo`, `listCameras`, `getSnapshot`, `listRecordings`) over `SYNO.SurveillanceStation.*`, on top of `syno-core`.
 - `packages/photo` — `@overworks/syno-photo`: Synology Photos wrappers (`listAlbums`, `listItems`, `download`) over `SYNO.Foto.*` (Personal Space), on top of `syno-core`.
 - `packages/audio` — `@overworks/syno-audio`: Audio Station wrappers (`getInfo`, `listSongs`, `listAlbums`, `listArtists`, `listPlaylists`, `getCover`) over `SYNO.AudioStation.*`, on top of `syno-core`.
+- `packages/log` — `@overworks/syno-log`: read-only system-log wrappers (`listLogs`, `getStatus`) over `SYNO.Core.SyslogClient.*`, on top of `syno-core`.
 - `packages/cli` — `@overworks/syno-cli` (`bin: syno`): commander-based CLI on top of `syno-core` + domain packages.
 
 Package names are scoped under the maintainer's npm org `@overworks` with a `syno-` prefix; one Synology service per package. Names trim the `-Station` suffix to match the DSM-side aliases (`@overworks/syno-file`, not `@overworks/syno-file-station`).
 
-Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, `SYNO.DownloadStation.Task`, `SYNO.Core.System`, `SYNO.Core.System.Utilization`, `SYNO.Storage.CGI.Storage`, `SYNO.SurveillanceStation.*` (Info/Camera/Recording), `SYNO.Foto.*` (Browse.Album/Browse.Item/Download), and `SYNO.AudioStation.*` (Info/Song/Album/Artist/Playlist/Cover). Other domains (Video, …) will land as additional workspace packages following the same shape.
+Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, `SYNO.DownloadStation.Task`, `SYNO.Core.System`, `SYNO.Core.System.Utilization`, `SYNO.Storage.CGI.Storage`, `SYNO.SurveillanceStation.*` (Info/Camera/Recording), `SYNO.Foto.*` (Browse.Album/Browse.Item/Download), `SYNO.AudioStation.*` (Info/Song/Album/Artist/Playlist/Cover), and `SYNO.Core.SyslogClient.*` (Log/Status). Other domains (Video, …) will land as additional workspace packages following the same shape.
 
 ## Tooling
 
@@ -91,6 +92,12 @@ packages/
     src/
       audio.ts                 # getInfo / listSongs / listAlbums / listArtists / listPlaylists / getCover (raw)
       types.ts                 # Song, AudioAlbum, Artist, Playlist, …
+      index.ts                 # public surface
+    test/             # vitest, fetch is mocked
+  log/                           # @overworks/syno-log
+    src/
+      log.ts                   # listLogs / getStatus
+      types.ts                 # LogEntry, LogStatus, …
       index.ts                 # public surface
     test/             # vitest, fetch is mocked
   cli/

@@ -1,0 +1,51 @@
+{
+  "name": "@overworks/syno-log",
+  "version": "0.1.2",
+  "description": "Synology system log (SYNO.Core.SyslogClient.*) client built on @overworks/syno-core",
+  "license": "MIT",
+  "author": "Minhyung Park",
+  "homepage": "https://github.com/overworks/syno-cli/tree/0.x/packages/log#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/overworks/syno-cli.git",
+    "directory": "packages/log"
+  },
+  "bugs": "https://github.com/overworks/syno-cli/issues",
+  "keywords": [
+    "synology",
+    "dsm",
+    "nas",
+    "webapi",
+    "syslog",
+    "logs"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@overworks/syno-core": "workspace:*"
+  }
+}

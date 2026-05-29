@@ -11,6 +11,7 @@ This is a pnpm + Turborepo monorepo containing:
 - **`@overworks/syno-surveillance`** — Surveillance Station wrappers (info / camera list + snapshot / recording list) on top of `syno-core`.
 - **`@overworks/syno-photo`** — Synology Photos wrappers (album list / item list / download) on top of `syno-core`.
 - **`@overworks/syno-audio`** — Audio Station wrappers (info / song / album / artist / playlist list / cover) on top of `syno-core`.
+- **`@overworks/syno-log`** — read-only system-log wrappers (list / status) on top of `syno-core`.
 - **`@overworks/syno-cli`** (`syno` binary) — [commander](https://github.com/tj/commander.js) CLI built on top of `syno-core` and the domain packages.
 
 ## Status
@@ -88,6 +89,11 @@ node packages/cli/dist/index.js audio album list
 node packages/cli/dist/index.js audio playlist list
 node packages/cli/dist/index.js audio cover music_1 -o art.jpg
 
+# System log (SYNO.Core.SyslogClient.*)
+node packages/cli/dist/index.js log list --level error --limit 100
+node packages/cli/dist/index.js log list --type connection --keyword login
+node packages/cli/dist/index.js log status
+
 # Every non-auth command accepts --profile <name> to override the current profile for one call
 node packages/cli/dist/index.js --profile work file list
 
@@ -115,6 +121,7 @@ packages/
   surveillance/       # @overworks/syno-surveillance — SYNO.SurveillanceStation.* wrappers
   photo/              # @overworks/syno-photo     — SYNO.Foto.* (Synology Photos) wrappers
   audio/              # @overworks/syno-audio     — SYNO.AudioStation.* wrappers
+  log/                # @overworks/syno-log       — SYNO.Core.SyslogClient.* wrappers
   cli/                # @overworks/syno-cli       — `syno` binary
 ```
 
