@@ -3,6 +3,28 @@
   "version": "0.0.0",
   "description": "Command-line interface for the Synology DSM Web API",
   "license": "MIT",
+  "author": "Minhyung Park",
+  "homepage": "https://github.com/overworks/syno-cli/tree/0.x/packages/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/overworks/syno-cli.git",
+    "directory": "packages/cli"
+  },
+  "bugs": "https://github.com/overworks/syno-cli/issues",
+  "keywords": [
+    "synology",
+    "dsm",
+    "nas",
+    "webapi",
+    "cli",
+    "synology-cli",
+    "filestation",
+    "downloadstation"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "type": "module",
   "bin": {
     "syno": "./dist/index.js"

@@ -3,6 +3,26 @@
   "version": "0.0.0",
   "description": "TypeScript SDK for the Synology DSM Web API",
   "license": "MIT",
+  "author": "Minhyung Park",
+  "homepage": "https://github.com/overworks/syno-cli/tree/0.x/packages/core#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/overworks/syno-cli.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/overworks/syno-cli/issues",
+  "keywords": [
+    "synology",
+    "dsm",
+    "nas",
+    "webapi",
+    "sdk",
+    "fetch"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

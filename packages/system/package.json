@@ -3,6 +3,27 @@
   "version": "0.0.0",
   "description": "Synology system status (SYNO.Core.System.*, SYNO.Storage.CGI.Storage) client built on @overworks/syno-core",
   "license": "MIT",
+  "author": "Minhyung Park",
+  "homepage": "https://github.com/overworks/syno-cli/tree/0.x/packages/system#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/overworks/syno-cli.git",
+    "directory": "packages/system"
+  },
+  "bugs": "https://github.com/overworks/syno-cli/issues",
+  "keywords": [
+    "synology",
+    "dsm",
+    "nas",
+    "webapi",
+    "system",
+    "monitoring",
+    "storage"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

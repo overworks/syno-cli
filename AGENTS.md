@@ -111,12 +111,19 @@ packages/
 - **`core` has no runtime deps.** Add new runtime deps to `cli`. If you need a parser/util in `core`, write it.
 - **Tests don't hit the network.** Inject a `fetch` into `SynoClient({ fetch })` and assert on the URL + body.
 
+## Releasing
+
+All five packages publish together as a **fixed** Changesets group (one shared version). Add a
+changeset with `pnpm changeset`, merge to `0.x`; CI opens a "Version Packages" PR, and merging that
+PR publishes to npm with provenance. Versions/`workspace:*` are rewritten by Changesets — never bump
+by hand. Full process + one-time `NPM_TOKEN` setup: [`RELEASING.md`](./RELEASING.md). Config lives in
+`.changeset/config.json` (`baseBranch: 0.x`); workflows in `.github/workflows/`.
+
 ## Out of scope right now (planned follow-ups)
 
 - Additional domain packages: `@overworks/syno-surveillance`, `@overworks/syno-photo`, `@overworks/syno-audio`, …
 - Real interactive TUI (`interactive.ts` is currently a stub that prints a message)
 - OS keychain credential storage (`keytar`)
-- `changesets` + npm publishing
 
 ## Things to avoid
 
