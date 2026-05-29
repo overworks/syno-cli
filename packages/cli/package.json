@@ -47,6 +47,7 @@
     "@overworks/syno-ds": "workspace:*",
     "@overworks/syno-file": "workspace:*",
     "@overworks/syno-system": "workspace:*",
+    "@overworks/syno-surveillance": "workspace:*",
     "commander": "12.1.0"
   }
 }

@@ -10,11 +10,12 @@ TypeScript pnpm + Turborepo monorepo for accessing the Synology DSM Web API.
 - `packages/file` — `@overworks/syno-file`: Synology File Station wrappers (`list`, `listShares`, `createFolder`, `del`/`startDelete`/`deleteStatus`/`stopDelete`, `upload`/`uploadFromPath`, `download`) on top of `syno-core`.
 - `packages/ds` — `@overworks/syno-ds`: Download Station task wrappers (`listTasks`, `getTaskInfo`, `createTask`, `pauseTasks`, `resumeTasks`, `deleteTasks`) on top of `syno-core`. (npm rejects names containing "download", so the package is `syno-ds`; the CLI group stays `syno download`.)
 - `packages/system` — `@overworks/syno-system`: read-only system-status wrappers (`getSystemInfo`, `getUtilization`, `getStorageInfo`) over `SYNO.Core.System.*` + `SYNO.Storage.CGI.Storage`, on top of `syno-core`.
+- `packages/surveillance` — `@overworks/syno-surveillance`: Surveillance Station wrappers (`getInfo`, `listCameras`, `getSnapshot`, `listRecordings`) over `SYNO.SurveillanceStation.*`, on top of `syno-core`.
 - `packages/cli` — `@overworks/syno-cli` (`bin: syno`): commander-based CLI on top of `syno-core` + domain packages.
 
 Package names are scoped under the maintainer's npm org `@overworks` with a `syno-` prefix; one Synology service per package. Names trim the `-Station` suffix to match the DSM-side aliases (`@overworks/syno-file`, not `@overworks/syno-file-station`).
 
-Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, `SYNO.DownloadStation.Task`, `SYNO.Core.System`, `SYNO.Core.System.Utilization`, and `SYNO.Storage.CGI.Storage`. Other domains (Surveillance, Photo, …) will land as additional workspace packages following the same shape.
+Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, `SYNO.DownloadStation.Task`, `SYNO.Core.System`, `SYNO.Core.System.Utilization`, `SYNO.Storage.CGI.Storage`, and `SYNO.SurveillanceStation.*` (Info/Camera/Recording). Other domains (Photo, Audio, …) will land as additional workspace packages following the same shape.
 
 ## Tooling
 
@@ -72,6 +73,12 @@ packages/
       types.ts                 # SystemInfo, Utilization, StorageInfo, …
       index.ts                 # public surface
     test/             # vitest, fetch is mocked
+  surveillance/                  # @overworks/syno-surveillance
+    src/
+      surveillance.ts          # getInfo / listCameras / getSnapshot (raw) / listRecordings
+      types.ts                 # SurveillanceInfo, Camera, Recording, …
+      index.ts                 # public surface
+    test/             # vitest, fetch is mocked
   cli/
     src/
       index.ts                 # commander entrypoint + interactive hook
@@ -96,6 +103,9 @@ packages/
         system/
           index.ts             # `syno system` group (SYNO.Core.System.* + storage)
           info.ts usage.ts storage.ts format.ts
+        surveillance/
+          index.ts             # `syno surveillance` group (SYNO.SurveillanceStation.*)
+          info.ts camera.ts recording.ts   # camera = list + snapshot (binary)
     test/             # vitest, XDG_CONFIG_HOME-overridden tmpdir, no network
 ```
 
@@ -121,7 +131,7 @@ by hand. Full process + one-time `NPM_TOKEN` setup: [`RELEASING.md`](./RELEASING
 
 ## Out of scope right now (planned follow-ups)
 
-- Additional domain packages: `@overworks/syno-surveillance`, `@overworks/syno-photo`, `@overworks/syno-audio`, …
+- Additional domain packages: `@overworks/syno-photo`, `@overworks/syno-audio`, `@overworks/syno-video`, …
 - Real interactive TUI (`interactive.ts` is currently a stub that prints a message)
 - OS keychain credential storage (`keytar`)
 
