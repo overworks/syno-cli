@@ -77,6 +77,7 @@ packages/
           index.ts             # `syno auth` group
           login.ts logout.ts list.ts show.ts use.ts rm.ts
         api/list.ts
+        completion.ts          # `syno completion <bash|zsh>` — walks the commander tree
         file/
           index.ts             # `syno file` group (DSM alias for FileStation)
           list.ts mkdir.ts rm.ts upload.ts download.ts
@@ -104,7 +105,7 @@ packages/
 - Streaming uploads for very large files (current `upload` reads the whole file into memory)
 - Real interactive TUI (`interactive.ts` is currently a stub that prints a message)
 - OS keychain credential storage (`keytar`)
-- Shell completion, `changesets` + npm publishing
+- `changesets` + npm publishing
 
 ## Things to avoid
 

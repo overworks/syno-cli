@@ -5,6 +5,7 @@ import { authCommand } from "./commands/auth/index.js";
 import { apiCommand } from "./commands/api/list.js";
 import { fileCommand } from "./commands/file/index.js";
 import { downloadCommand } from "./commands/download/index.js";
+import { completionCommand } from "./commands/completion.js";
 import { runInteractive } from "./interactive.js";
 
 async function main(): Promise<void> {
@@ -21,6 +22,7 @@ async function main(): Promise<void> {
   program.addCommand(apiCommand());
   program.addCommand(fileCommand());
   program.addCommand(downloadCommand());
+  program.addCommand(completionCommand());
 
   await program.parseAsync(process.argv);
 }

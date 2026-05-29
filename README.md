@@ -61,6 +61,10 @@ node packages/cli/dist/index.js download rm     dbid_1 --force-complete
 
 # Every non-auth command accepts --profile <name> to override the current profile for one call
 node packages/cli/dist/index.js --profile work file list
+
+# Shell completion (bash or zsh)
+node packages/cli/dist/index.js completion bash >> ~/.bashrc-syno      # then `source ~/.bashrc-syno`
+node packages/cli/dist/index.js completion zsh  > ~/.zsh/completions/_syno
 ```
 
 Profiles are stored at `~/.config/syno-cli/config.json` (mode `0600`) as
