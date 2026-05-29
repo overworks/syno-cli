@@ -38,6 +38,9 @@ importers:
       '@overworks/syno-file':
         specifier: workspace:*
         version: link:../file
+      '@overworks/syno-photo':
+        specifier: workspace:*
+        version: link:../photo
       '@overworks/syno-surveillance':
         specifier: workspace:*
         version: link:../surveillance
@@ -57,6 +60,12 @@ importers:
         version: link:../core
 
   packages/file:
+    dependencies:
+      '@overworks/syno-core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/photo:
     dependencies:
       '@overworks/syno-core':
         specifier: workspace:*

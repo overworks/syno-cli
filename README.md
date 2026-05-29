@@ -9,6 +9,7 @@ This is a pnpm + Turborepo monorepo containing:
 - **`@overworks/syno-ds`** — Download Station task wrappers (list / add / pause / resume / rm) on top of `syno-core`.
 - **`@overworks/syno-system`** — read-only system-status wrappers (info / usage / storage) on top of `syno-core`.
 - **`@overworks/syno-surveillance`** — Surveillance Station wrappers (info / camera list + snapshot / recording list) on top of `syno-core`.
+- **`@overworks/syno-photo`** — Synology Photos wrappers (album list / item list / download) on top of `syno-core`.
 - **`@overworks/syno-cli`** (`syno` binary) — [commander](https://github.com/tj/commander.js) CLI built on top of `syno-core` and the domain packages.
 
 ## Status
@@ -74,6 +75,11 @@ node packages/cli/dist/index.js surveillance camera list        # configured cam
 node packages/cli/dist/index.js surveillance camera snapshot 1 -o front.jpg   # JPEG snapshot
 node packages/cli/dist/index.js surveillance recording list --camera 1,2
 
+# Synology Photos (SYNO.Foto.*)
+node packages/cli/dist/index.js photo album list
+node packages/cli/dist/index.js photo list --album 3 --type photo
+node packages/cli/dist/index.js photo download 42 -o vacation.jpg
+
 # Every non-auth command accepts --profile <name> to override the current profile for one call
 node packages/cli/dist/index.js --profile work file list
 
@@ -99,6 +105,7 @@ packages/
   ds/                 # @overworks/syno-ds        — SYNO.DownloadStation.Task wrappers
   system/             # @overworks/syno-system    — SYNO.Core.System.* + storage wrappers
   surveillance/       # @overworks/syno-surveillance — SYNO.SurveillanceStation.* wrappers
+  photo/              # @overworks/syno-photo     — SYNO.Foto.* (Synology Photos) wrappers
   cli/                # @overworks/syno-cli       — `syno` binary
 ```
 
