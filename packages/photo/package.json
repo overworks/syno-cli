@@ -1,6 +1,6 @@
 {
   "name": "@overworks/syno-photo",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Synology Photos (SYNO.Foto.*) client built on @overworks/syno-core",
   "license": "MIT",
   "author": "Minhyung Park",

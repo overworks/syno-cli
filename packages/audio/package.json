@@ -1,6 +1,6 @@
 {
   "name": "@overworks/syno-audio",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Synology Audio Station (SYNO.AudioStation.*) client built on @overworks/syno-core",
   "license": "MIT",
   "author": "Minhyung Park",
