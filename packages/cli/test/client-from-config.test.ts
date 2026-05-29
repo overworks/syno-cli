@@ -22,6 +22,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   delete process.env["XDG_CONFIG_HOME"];
+  delete process.env["SYNO_PROFILE"];
   await rm(workDir, { recursive: true, force: true });
 });
 
@@ -80,5 +81,39 @@ describe("clientFromConfig — with config", () => {
     expect(client.baseUrl).toBe("https://alt:5001");
     expect(client.getSid()).toBe("sid-work");
     expect(profile?.name).toBe("work");
+  });
+});
+
+describe("clientFromConfig — SYNO_PROFILE env var", () => {
+  it("selects the profile named by $SYNO_PROFILE", async () => {
+    await upsertProfile("home", sample());
+    await upsertProfile("work", sample({ host: "https://nas.work:5001", sid: "sid-work" }));
+    process.env["SYNO_PROFILE"] = "work";
+    const { client, profile } = await clientFromConfig();
+    expect(client.baseUrl).toBe("https://nas.work:5001");
+    expect(client.getSid()).toBe("sid-work");
+    expect(profile?.name).toBe("work");
+  });
+
+  it("lets --profile take precedence over $SYNO_PROFILE", async () => {
+    await upsertProfile("home", sample());
+    await upsertProfile("work", sample({ host: "https://nas.work:5001", sid: "sid-work" }));
+    process.env["SYNO_PROFILE"] = "work";
+    const { client, profile } = await clientFromConfig({ profile: "home" });
+    expect(client.baseUrl).toBe("https://nas.example:5001");
+    expect(profile?.name).toBe("home");
+  });
+
+  it("falls back to config `current` when $SYNO_PROFILE is empty", async () => {
+    await upsertProfile("default", sample());
+    process.env["SYNO_PROFILE"] = "   ";
+    const { profile } = await clientFromConfig();
+    expect(profile?.name).toBe("default");
+  });
+
+  it("throws when $SYNO_PROFILE names a non-existent profile", async () => {
+    await upsertProfile("default", sample());
+    process.env["SYNO_PROFILE"] = "ghost";
+    await expect(clientFromConfig()).rejects.toThrow(/Profile "ghost" not found/);
   });
 });

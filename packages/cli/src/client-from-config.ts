@@ -11,11 +11,15 @@ export async function clientFromConfig(opts: ClientFromConfigOptions = {}): Prom
   configured: boolean;
   profile?: { name: string; profile: SynoProfile };
 }> {
-  if (opts.profile) {
-    const found = await getProfile(opts.profile);
+  // Profile selection precedence: --profile > $SYNO_PROFILE > config `current`.
+  const envProfile = process.env["SYNO_PROFILE"]?.trim();
+  const selected = opts.profile ?? (envProfile ? envProfile : undefined);
+
+  if (selected) {
+    const found = await getProfile(selected);
     if (!found) {
       throw new Error(
-        `Profile "${opts.profile}" not found. Run \`syno auth list\` to see configured profiles.`,
+        `Profile "${selected}" not found. Run \`syno auth list\` to see configured profiles.`,
       );
     }
     const host = opts.host ?? found.profile.host;

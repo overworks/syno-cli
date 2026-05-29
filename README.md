@@ -69,6 +69,9 @@ node packages/cli/dist/index.js system usage --json | jq
 # Every non-auth command accepts --profile <name> to override the current profile for one call
 node packages/cli/dist/index.js --profile work file list
 
+# Or set SYNO_PROFILE to switch the default profile for a shell (precedence: --profile > $SYNO_PROFILE > current)
+SYNO_PROFILE=work node packages/cli/dist/index.js file list
+
 # Shell completion (bash or zsh)
 node packages/cli/dist/index.js completion bash >> ~/.bashrc-syno      # then `source ~/.bashrc-syno`
 node packages/cli/dist/index.js completion zsh  > ~/.zsh/completions/_syno
