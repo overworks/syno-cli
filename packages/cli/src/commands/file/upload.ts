@@ -1,7 +1,5 @@
-import { basename } from "node:path";
-import { readFile, stat } from "node:fs/promises";
 import { Command } from "commander";
-import { upload } from "@overworks/syno-file";
+import { uploadFromPath } from "@overworks/syno-file";
 import { clientFromConfig } from "../../client-from-config.js";
 
 interface UploadOptions {
@@ -15,7 +13,7 @@ interface UploadOptions {
 
 export function fileUploadCommand(): Command {
   return new Command("upload")
-    .description("Upload a local file into a remote directory")
+    .description("Upload a local file into a remote directory (streamed from disk)")
     .argument("<local>", "Path to local file")
     .argument("<remoteDir>", "Destination folder on the DSM (e.g. /home/me)")
     .option("--profile <name>", "Auth profile to use (default: current)")
@@ -25,19 +23,13 @@ export function fileUploadCommand(): Command {
     .option("-p, --parents", "Create missing parents of the remote directory")
     .option("--name <filename>", "Override stored filename (default: basename of local)")
     .action(async (local: string, remoteDir: string, opts: UploadOptions) => {
-      const stats = await stat(local);
-      if (!stats.isFile()) throw new Error(`${local} is not a regular file`);
-      const data = await readFile(local);
-      const filename = opts.name ?? basename(local);
-
       const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
-      const res = await upload(client, {
+      const res = await uploadFromPath(client, {
         destPath: remoteDir,
-        filename,
-        data,
+        localPath: local,
+        filename: opts.name,
         overwrite: opts.skip ? "skip" : opts.overwrite ?? false,
         createParents: opts.parents,
-        mtime: Math.floor(stats.mtimeMs),
       });
       process.stdout.write(`Uploaded ${local} → ${res.path}\n`);
     });

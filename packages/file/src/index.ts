@@ -10,6 +10,9 @@ export type { DeleteOptions, StartDeleteArgs, DeleteTask, DeleteStatus } from ".
 export { upload } from "./upload.js";
 export type { UploadArgs, UploadResult } from "./upload.js";
 
+export { uploadFromPath } from "./upload-from-path.js";
+export type { UploadFromPathArgs } from "./upload-from-path.js";
+
 export { download } from "./download.js";
 export type { DownloadArgs } from "./download.js";
 

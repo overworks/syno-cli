@@ -1,5 +1,5 @@
 export { SynoClient } from "./client.js";
-export type { SynoClientOptions, FetchLike } from "./client.js";
+export type { SynoClientOptions, FetchLike, MultipartFilePart } from "./client.js";
 export { SynoApiError, describeSynoErrorCode } from "./errors.js";
 export { login, logout } from "./auth.js";
 export type { LoginParams, LoginResult } from "./auth.js";
