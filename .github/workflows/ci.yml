@@ -16,13 +16,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Node must be set up before pnpm: pnpm 11's self-installer runs under
-      # the active Node, and pnpm 11.4 requires Node >= 22.13.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - uses: pnpm/action-setup@v4
+      # corepack activates the pnpm version pinned in package.json's
+      # packageManager field, running under Node 22 (pnpm 11.4 needs >=22.13).
+      # Using pnpm/action-setup instead fails: its installer runs under the
+      # Actions runtime's Node 20, not the workflow's Node.
+      - run: corepack enable
 
       - run: pnpm install --frozen-lockfile
 

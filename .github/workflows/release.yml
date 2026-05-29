@@ -18,14 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Node before pnpm: pnpm 11.4 requires Node >= 22.13, and
-      # pnpm/action-setup runs its installer under the active Node.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
 
-      - uses: pnpm/action-setup@v4
+      # corepack activates pnpm (packageManager field) under Node 22.
+      # pnpm/action-setup fails here: its installer runs under the Actions
+      # runtime's Node 20, which pnpm 11.4's engine rejects.
+      - run: corepack enable
 
       - run: pnpm install --frozen-lockfile
 
