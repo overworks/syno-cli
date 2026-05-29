@@ -1,6 +1,6 @@
 {
   "name": "@overworks/syno-download",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Synology Download Station (SYNO.DownloadStation.*) client built on @overworks/syno-core",
   "license": "MIT",
   "author": "Minhyung Park",
