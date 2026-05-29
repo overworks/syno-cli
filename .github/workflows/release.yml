@@ -18,13 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
+      # Node before pnpm: pnpm 11.4 requires Node >= 22.13, and
+      # pnpm/action-setup runs its installer under the active Node.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
-          cache: pnpm
+
+      - uses: pnpm/action-setup@v4
 
       - run: pnpm install --frozen-lockfile
 

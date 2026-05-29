@@ -16,12 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
+      # Node must be set up before pnpm: pnpm 11's self-installer runs under
+      # the active Node, and pnpm 11.4 requires Node >= 22.13.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+
+      - uses: pnpm/action-setup@v4
 
       - run: pnpm install --frozen-lockfile
 
