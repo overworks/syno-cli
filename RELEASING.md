@@ -1,6 +1,6 @@
 # Releasing
 
-This monorepo publishes all five `@overworks/syno-*` packages to npm with
+This monorepo publishes every `@overworks/syno-*` workspace package to npm with
 [Changesets](https://github.com/changesets/changesets). They share one version (a **fixed** group),
 so every release bumps and publishes them together.
 
@@ -13,14 +13,15 @@ so every release bumps and publishes them together.
    ```
    Pick a bump level (patch / minor / major) and write a one-line summary. Commit the generated
    `.changeset/*.md` file with your change. Because the group is fixed, selecting any one package
-   bumps all five.
+   bumps all of them.
 3. Merge the PR into `0.x`.
 4. CI (`.github/workflows/release.yml`) sees the pending changeset and opens a **"Version Packages"**
    PR that applies the bump (updates every `package.json` + `CHANGELOG.md`, rewrites `workspace:*`
    ranges).
 5. **Merge the "Version Packages" PR.** That push triggers the workflow again; this time there are no
    pending changesets, so it runs `pnpm release` (`pnpm build && changeset publish`) and publishes to
-   npm with [provenance](https://docs.npmjs.com/generating-provenance-statements).
+   npm with [provenance](https://docs.npmjs.com/generating-provenance-statements). The workflow runs
+   `pnpm build && pnpm typecheck && pnpm test` first, so a red suite never publishes.
 
 You never bump versions or run `npm publish` by hand.
 
@@ -34,16 +35,10 @@ You never bump versions or run `npm publish` by hand.
   permission (already set). If the repo is ever made private, remove `id-token: write` from
   `release.yml` and `"provenance": true` from each package's `publishConfig`.
 
-## First release (0.1.0)
-
-A seed changeset (`.changeset/initial-release.md`) is already present, so once `NPM_TOKEN` is
-configured the first push to `0.x` opens the Version Packages PR that sets everything to `0.1.0`.
-Merging it publishes the initial release.
-
 ## Local dry-run
 
 ```bash
 pnpm changeset status            # what would be released
 npx changeset version           # apply bumps locally to inspect — then `git restore .` to undo
-pnpm -r publish --dry-run --no-git-checks   # inspect tarball contents + access, no upload
+pnpm build && pnpm -r publish --dry-run --no-git-checks   # inspect tarball contents + access, no upload
 ```

@@ -1,20 +1,19 @@
 import { Command } from "commander";
 import { del } from "@overworks/syno-file";
+import { printJson } from "../../output.js";
 import { clientFromConfig } from "../../client-from-config.js";
+import { type ConnectionOptions, withConnectionOptions, withJsonOption } from "../shared.js";
 
-interface RmOptions {
-  host?: string;
-  profile?: string;
+interface RmOptions extends ConnectionOptions {
+  json?: boolean;
   recursive?: boolean;
   quiet?: boolean;
 }
 
 export function fileRmCommand(): Command {
-  return new Command("rm")
+  return withConnectionOptions(withJsonOption(new Command("rm"), "a status line"))
     .description("Delete one or more remote paths")
     .argument("<paths...>", "Remote paths to delete")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
     .option("-r, --recursive", "Recurse into directories")
     .option("-q, --quiet", "Suppress progress output")
     .action(async (paths: string[], opts: RmOptions) => {
@@ -34,6 +33,7 @@ export function fileRmCommand(): Command {
             },
       });
       if (!opts.quiet) process.stderr.write("\n");
+      if (opts.json) return printJson(status);
       process.stdout.write(`Deleted ${status.processed_num} entr${status.processed_num === 1 ? "y" : "ies"}\n`);
     });
 }

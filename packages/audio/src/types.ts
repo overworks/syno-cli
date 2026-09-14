@@ -72,11 +72,22 @@ export interface PlaylistListPage {
   offset?: number;
 }
 
-export interface ListOptions {
+export interface AudioListOptions {
   offset?: number;
   limit?: number;
   /** Which library to read. DSM defaults to all when omitted. */
   library?: AudioLibrary;
+}
+
+/** @deprecated Renamed to {@link AudioListOptions} to avoid clashing with other `syno-*` packages. */
+export type ListOptions = AudioListOptions;
+
+/** Extra sections `SYNO.AudioStation.Song` can attach to each song. */
+export type SongAdditionalField = "song_tag" | "song_audio" | "song_rating";
+
+export interface ListSongsOptions extends AudioListOptions {
+  /** Defaults to `["song_tag", "song_audio"]`. Pass `[]` to request none. */
+  additional?: SongAdditionalField[];
 }
 
 export interface GetCoverOptions {

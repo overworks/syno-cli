@@ -28,7 +28,7 @@ describe("listAlbums", () => {
       return { json: { success: true, data: { list: [{ id: 3, name: "Vacation", item_count: 12 }] } } };
     });
     const page = await listAlbums(c, { limit: 50 });
-    expect(page.list?.[0]?.name).toBe("Vacation");
+    expect(page.albums[0]?.name).toBe("Vacation");
   });
 });
 
@@ -39,6 +39,8 @@ describe("listItems", () => {
       expect(url.searchParams.get("method")).toBe("list");
       expect(url.searchParams.get("album_id")).toBe("3");
       expect(url.searchParams.get("type")).toBe("photo");
+      expect(url.searchParams.get("offset")).toBe("0");
+      expect(url.searchParams.get("limit")).toBe("100");
       return {
         json: {
           success: true,
@@ -47,7 +49,10 @@ describe("listItems", () => {
       };
     });
     const page = await listItems(c, { albumId: 3, type: "photo" });
-    expect(page.items?.[0]?.filename).toBe("p.jpg");
+    expect(page.items[0]?.filename).toBe("p.jpg");
+    expect(page.items[0]?.type).toBe("photo");
+    expect(page.items[0]).not.toHaveProperty("item_type");
+    expect(page.total).toBe(1);
   });
 });
 

@@ -20,7 +20,7 @@ export async function download(client: SynoClient, args: DownloadArgs): Promise<
     version: 2,
     method: "download",
     params: {
-      path: Array.isArray(args.path) ? args.path : args.path,
+      path: args.path,
       mode: args.mode ?? "download",
     },
   });

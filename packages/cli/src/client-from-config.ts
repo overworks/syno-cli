@@ -18,14 +18,22 @@ export function activeProfile(): string | undefined {
   return activeProfileName;
 }
 
+/**
+ * Profile selection precedence shared by every command: an explicit
+ * `--profile` wins, then `$SYNO_PROFILE`, else `undefined` (= config `current`).
+ */
+export function resolveProfileName(explicit?: string): string | undefined {
+  if (explicit) return explicit;
+  const env = process.env["SYNO_PROFILE"]?.trim();
+  return env ? env : undefined;
+}
+
 export async function clientFromConfig(opts: ClientFromConfigOptions = {}): Promise<{
   client: SynoClient;
   configured: boolean;
   profile?: { name: string; profile: SynoProfile };
 }> {
-  // Profile selection precedence: --profile > $SYNO_PROFILE > config `current`.
-  const envProfile = process.env["SYNO_PROFILE"]?.trim();
-  const selected = opts.profile ?? (envProfile ? envProfile : undefined);
+  const selected = resolveProfileName(opts.profile);
 
   if (selected) {
     const found = await getProfile(selected);

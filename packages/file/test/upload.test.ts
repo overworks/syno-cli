@@ -15,6 +15,8 @@ describe("upload", () => {
       expect(file).toBeInstanceOf(File);
       expect((file as File).name).toBe("hello.txt");
       expect(await (file as File).text()).toBe("payload");
+      // Synology ignores parameters that follow the file part.
+      expect([...form.keys()].at(-1)).toBe("file");
       return new Response(
         JSON.stringify({ success: true, data: { name: "hello.txt", path: "/home/me/hello.txt" } }),
         { status: 200 },

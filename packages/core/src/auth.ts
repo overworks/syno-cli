@@ -17,6 +17,7 @@ export async function login(client: SynoClient, params: LoginParams): Promise<Lo
     api: "SYNO.API.Auth",
     version: 6,
     method: "login",
+    httpMethod: "POST",
     params: {
       account: params.account,
       passwd: params.passwd,
@@ -35,6 +36,7 @@ export async function logout(client: SynoClient, session: string = "syno-cli"): 
     api: "SYNO.API.Auth",
     version: 6,
     method: "logout",
+    httpMethod: "POST",
     params: { session },
   });
   client.setSid(undefined);

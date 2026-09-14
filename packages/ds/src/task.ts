@@ -1,12 +1,22 @@
 import type { SynoClient } from "@overworks/syno-core";
 import type { Task, TaskListPage } from "./types.js";
 
-export type TaskAdditional = "detail" | "transfer" | "file" | "tracker" | "peer";
+/** Extra sections `SYNO.DownloadStation.Task` can attach to each task. */
+export type TaskAdditionalField = "detail" | "transfer" | "file" | "tracker" | "peer";
 
 export interface ListTasksOptions {
   offset?: number;
   limit?: number;
-  additional?: TaskAdditional[];
+  additional?: TaskAdditionalField[];
+}
+
+/**
+ * Download Station runs on the legacy `task.cgi` and takes list parameters
+ * as comma-separated values, not the JSON arrays `entry.cgi` accepts.
+ */
+function csv(v: string | string[] | undefined): string | undefined {
+  if (v === undefined) return undefined;
+  return Array.isArray(v) ? v.join(",") : v;
 }
 
 export async function listTasks(
@@ -20,14 +30,14 @@ export async function listTasks(
     params: {
       offset: opts.offset,
       limit: opts.limit,
-      additional: opts.additional,
+      additional: csv(opts.additional),
     },
   });
 }
 
 export interface GetTaskInfoOptions {
   id: string | string[];
-  additional?: TaskAdditional[];
+  additional?: TaskAdditionalField[];
 }
 
 export async function getTaskInfo(
@@ -39,8 +49,8 @@ export async function getTaskInfo(
     version: 1,
     method: "getinfo",
     params: {
-      id: Array.isArray(opts.id) ? opts.id : [opts.id],
-      additional: opts.additional,
+      id: csv(opts.id),
+      additional: csv(opts.additional),
     },
   });
 }
@@ -62,13 +72,14 @@ export async function createTask(
   client: SynoClient,
   args: CreateTaskArgs,
 ): Promise<{ task_id?: string[] }> {
-  const uri = Array.isArray(args.uri) ? args.uri.join(",") : args.uri;
   return client.request<{ task_id?: string[] }>({
     api: "SYNO.DownloadStation.Task",
     version: 1,
     method: "create",
+    // POST: source credentials must not end up in the URL / access logs.
+    httpMethod: "POST",
     params: {
-      uri,
+      uri: csv(args.uri),
       destination: args.destination,
       username: args.username,
       password: args.password,
@@ -90,7 +101,7 @@ export async function pauseTasks(
     api: "SYNO.DownloadStation.Task",
     version: 1,
     method: "pause",
-    params: { id: Array.isArray(id) ? id : [id] },
+    params: { id: csv(id) },
   });
 }
 
@@ -102,7 +113,7 @@ export async function resumeTasks(
     api: "SYNO.DownloadStation.Task",
     version: 1,
     method: "resume",
-    params: { id: Array.isArray(id) ? id : [id] },
+    params: { id: csv(id) },
   });
 }
 
@@ -121,7 +132,7 @@ export async function deleteTasks(
     version: 1,
     method: "delete",
     params: {
-      id: Array.isArray(opts.id) ? opts.id : [opts.id],
+      id: csv(opts.id),
       force_complete: opts.forceComplete,
     },
   });

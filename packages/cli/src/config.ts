@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 
 export interface SynoProfile {
   host: string;
@@ -23,10 +23,30 @@ export function configPath(): string {
   return join(configDir(), "config.json");
 }
 
+function isProfile(value: unknown): value is SynoProfile {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v["host"] === "string" &&
+    typeof v["account"] === "string" &&
+    typeof v["sid"] === "string" &&
+    typeof v["savedAt"] === "string"
+  );
+}
+
 function isConfig(value: unknown): value is SynoConfig {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
-  return typeof v["current"] === "string" && typeof v["profiles"] === "object" && v["profiles"] !== null;
+  const profiles = v["profiles"];
+  if (typeof v["current"] !== "string") return false;
+  if (!profiles || typeof profiles !== "object" || Array.isArray(profiles)) return false;
+  return Object.values(profiles as Record<string, unknown>).every(isProfile);
+}
+
+function malformed(): Error {
+  return new Error(
+    `Config at ${configPath()} is malformed (expected {current, profiles: {<name>: {host, account, sid, savedAt}}}). Remove the file and log in again.`,
+  );
 }
 
 export async function loadConfig(): Promise<SynoConfig | undefined> {
@@ -37,21 +57,34 @@ export async function loadConfig(): Promise<SynoConfig | undefined> {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return undefined;
     throw err;
   }
-  const parsed: unknown = JSON.parse(raw);
-  if (!isConfig(parsed)) {
-    throw new Error(
-      `Config at ${configPath()} is malformed (expected {current, profiles}). Remove the file and log in again.`,
-    );
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw malformed();
   }
+  if (!isConfig(parsed)) throw malformed();
   return parsed;
 }
 
+/**
+ * Atomically replace the config: write to a sibling temp file at mode 0600,
+ * then rename over the target so a crash mid-write can never leave truncated
+ * JSON, and the sid is never observable through a looser pre-existing mode.
+ */
 async function writeConfig(cfg: SynoConfig): Promise<void> {
   const dir = configDir();
   await mkdir(dir, { recursive: true, mode: 0o700 });
   const path = configPath();
-  await writeFile(path, JSON.stringify(cfg, null, 2), { encoding: "utf8", mode: 0o600 });
-  await chmod(path, 0o600);
+  const tmp = `${path}.${process.pid}.${Date.now()}.tmp`;
+  try {
+    await writeFile(tmp, JSON.stringify(cfg, null, 2), { encoding: "utf8", mode: 0o600, flag: "wx" });
+    await chmod(tmp, 0o600);
+    await rename(tmp, path);
+  } catch (err) {
+    await rm(tmp, { force: true });
+    throw err;
+  }
 }
 
 export async function deleteConfig(): Promise<void> {

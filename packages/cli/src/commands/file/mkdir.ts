@@ -2,23 +2,19 @@ import { posix as path } from "node:path";
 import { Command } from "commander";
 import { createFolder } from "@overworks/syno-file";
 import { clientFromConfig } from "../../client-from-config.js";
+import { type ConnectionOptions, withConnectionOptions, withJsonOption } from "../shared.js";
 import { printJson } from "../../output.js";
 
-interface MkdirOptions {
-  host?: string;
-  profile?: string;
+interface MkdirOptions extends ConnectionOptions {
   json?: boolean;
   parents?: boolean;
 }
 
 export function fileMkdirCommand(): Command {
-  return new Command("mkdir")
+  return withConnectionOptions(withJsonOption(new Command("mkdir"), "a status line"))
     .description("Create a folder on the DSM")
     .argument("<path>", "Absolute remote path of the folder to create")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
     .option("-p, --parents", "Create missing parents (force_parent)")
-    .option("--json", "Emit JSON instead of a status line")
     .action(async (target: string, opts: MkdirOptions) => {
       const parent = path.dirname(target);
       const name = path.basename(target);

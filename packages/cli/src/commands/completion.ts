@@ -57,10 +57,20 @@ function uniq(xs: string[]): string[] {
   return [...new Set(xs)];
 }
 
+/**
+ * Both scripts walk the words typed so far and descend the command tree only
+ * while each word names a known subcommand of the current node. The first
+ * word that isn't one (a path, a task id, …) is a positional argument: it is
+ * skipped and the current node's flags are what get completed.
+ */
 function bashScript(binary: string, nodes: Node[]): string {
   const fn = `_${binary.replace(/[^a-zA-Z0-9_]/g, "_")}_complete`;
   const allValueFlags = uniq(nodes.flatMap((n) => n.valueFlags)).sort();
   const valueFlagPattern = allValueFlags.length > 0 ? allValueFlags.map((f) => `"${f}"`).join("|") : "__none__";
+  const knownKeys = nodes
+    .filter((n) => n.path.length > 0)
+    .map((n) => `"${n.path.join(" ")}"`)
+    .join("|");
 
   const cases = nodes
     .map((n) => {
@@ -73,7 +83,7 @@ function bashScript(binary: string, nodes: Node[]): string {
   return `# bash completion for ${binary}
 ${fn}() {
     COMPREPLY=()
-    local cur w path key i
+    local cur w path candidate i
     cur="\${COMP_WORDS[COMP_CWORD]}"
     path=""
     i=1
@@ -93,17 +103,20 @@ ${fn}() {
             i=$((i + 1))
             continue
         fi
-        path="\${path:+$path }$w"
+        candidate="\${path:+$path }$w"
+        case "$candidate" in
+            ${knownKeys || '""'}) path="$candidate" ;;
+            *) ;;
+        esac
         i=$((i + 1))
     done
 
-    key="$path"
-    case "$key" in
+    case "$path" in
 ${cases}
         *) COMPREPLY=() ;;
     esac
 }
-complete -F ${fn} ${binary}
+complete -o default -F ${fn} ${binary}
 `;
 }
 
@@ -111,6 +124,10 @@ function zshScript(binary: string, nodes: Node[]): string {
   const fn = `_${binary.replace(/[^a-zA-Z0-9_]/g, "_")}`;
   const allValueFlags = uniq(nodes.flatMap((n) => n.valueFlags)).sort();
   const valueFlagsArr = allValueFlags.map((f) => `'${f}'`).join(" ");
+  const knownKeys = nodes
+    .filter((n) => n.path.length > 0)
+    .map((n) => `'${n.path.join(" ")}'`)
+    .join(" ");
 
   const cases = nodes
     .map((n) => {
@@ -123,12 +140,13 @@ function zshScript(binary: string, nodes: Node[]): string {
   return `#compdef ${binary}
 # zsh completion for ${binary}
 ${fn}() {
-    local -a value_flags
+    local -a value_flags known_keys
     value_flags=(${valueFlagsArr})
+    known_keys=(${knownKeys})
 
     local i=2
-    local path=()
-    local w
+    local -a cmdpath
+    local w candidate
     while (( i < CURRENT )); do
         w="\${words[i]}"
         if [[ "$w" == -* ]]; then
@@ -143,17 +161,26 @@ ${fn}() {
             (( i++ ))
             continue
         fi
-        path+=("$w")
+        candidate="\${(j: :)cmdpath} $w"
+        candidate="\${candidate# }"
+        if (( \${known_keys[(I)$candidate]} )); then
+            cmdpath+=("$w")
+        fi
         (( i++ ))
     done
 
-    local key="\${(j: :)path}"
+    local key="\${(j: :)cmdpath}"
     case "$key" in
 ${cases}
-        *) ;;
+        *) _files ;;
     esac
 }
-compdef ${fn} ${binary}
+# Works both when sourced directly and when autoloaded from $fpath as _${binary}.
+if [[ "\${zsh_eval_context[-1]}" == loadautofunc ]]; then
+    ${fn} "$@"
+else
+    compdef ${fn} ${binary}
+fi
 `;
 }
 

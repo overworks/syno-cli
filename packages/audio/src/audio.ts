@@ -4,7 +4,8 @@ import type {
   ArtistListPage,
   AudioInfo,
   GetCoverOptions,
-  ListOptions,
+  AudioListOptions,
+  ListSongsOptions,
   PlaylistListPage,
   SongListPage,
 } from "./types.js";
@@ -28,8 +29,12 @@ export async function getInfo(client: SynoClient): Promise<AudioInfo> {
   });
 }
 
-/** List songs. Pass `additional: ["song_tag","song_audio"]`-style data via the API itself if needed. */
-export async function listSongs(client: SynoClient, opts: ListOptions = {}): Promise<SongListPage> {
+/**
+ * List songs. `additional` defaults to `["song_tag", "song_audio"]`; Audio
+ * Station takes it as a comma-separated list (legacy CGI, not `entry.cgi`).
+ */
+export async function listSongs(client: SynoClient, opts: ListSongsOptions = {}): Promise<SongListPage> {
+  const additional = opts.additional ?? ["song_tag", "song_audio"];
   return client.request<SongListPage>({
     api: "SYNO.AudioStation.Song",
     version: SONG_VER,
@@ -38,13 +43,13 @@ export async function listSongs(client: SynoClient, opts: ListOptions = {}): Pro
       offset: opts.offset,
       limit: opts.limit,
       library: opts.library,
-      additional: ["song_tag", "song_audio"],
+      additional: additional.length > 0 ? additional.join(",") : undefined,
     },
   });
 }
 
 /** List albums. */
-export async function listAlbums(client: SynoClient, opts: ListOptions = {}): Promise<AlbumListPage> {
+export async function listAlbums(client: SynoClient, opts: AudioListOptions = {}): Promise<AlbumListPage> {
   return client.request<AlbumListPage>({
     api: "SYNO.AudioStation.Album",
     version: ALBUM_VER,
@@ -54,7 +59,7 @@ export async function listAlbums(client: SynoClient, opts: ListOptions = {}): Pr
 }
 
 /** List artists. */
-export async function listArtists(client: SynoClient, opts: ListOptions = {}): Promise<ArtistListPage> {
+export async function listArtists(client: SynoClient, opts: AudioListOptions = {}): Promise<ArtistListPage> {
   return client.request<ArtistListPage>({
     api: "SYNO.AudioStation.Artist",
     version: ARTIST_VER,
@@ -64,7 +69,7 @@ export async function listArtists(client: SynoClient, opts: ListOptions = {}): P
 }
 
 /** List playlists. */
-export async function listPlaylists(client: SynoClient, opts: ListOptions = {}): Promise<PlaylistListPage> {
+export async function listPlaylists(client: SynoClient, opts: AudioListOptions = {}): Promise<PlaylistListPage> {
   return client.request<PlaylistListPage>({
     api: "SYNO.AudioStation.Playlist",
     version: PLAYLIST_VER,

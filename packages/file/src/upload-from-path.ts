@@ -1,7 +1,6 @@
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { basename } from "node:path";
-import { Readable } from "node:stream";
 import type { SynoClient } from "@overworks/syno-core";
 import type { UploadResult } from "./upload.js";
 
@@ -52,20 +51,23 @@ export async function uploadFromPath(
   const filename = args.filename ?? basename(args.localPath);
   const nodeStream = createReadStream(args.localPath);
 
-  return client.requestStreamForm<UploadResult>({
-    api: "SYNO.FileStation.Upload",
-    version: 2,
-    method: "upload",
-    fields,
-    file: {
-      field: "file",
-      filename,
-      stream: nodeStream as unknown as NodeJS.ReadableStream,
-      size: stats.size,
-      contentType: args.contentType,
-    },
-  });
+  try {
+    return await client.requestStreamForm<UploadResult>({
+      api: "SYNO.FileStation.Upload",
+      version: 2,
+      method: "upload",
+      fields,
+      file: {
+        field: "file",
+        filename,
+        stream: nodeStream,
+        size: stats.size,
+        contentType: args.contentType,
+      },
+    });
+  } finally {
+    // If the request failed before the body was consumed (path resolution,
+    // connection refused, …) the fd would otherwise wait for GC.
+    if (!nodeStream.destroyed) nodeStream.destroy();
+  }
 }
-
-// keep Readable import live for type narrowing in case bundlers tree-shake it out
-void Readable;

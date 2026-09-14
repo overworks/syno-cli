@@ -20,3 +20,9 @@ export function pctOf(part: number | string | undefined, total: number | string 
   if (!p || !t || !Number.isFinite(p) || !Number.isFinite(t)) return "";
   return `${((p / t) * 100).toFixed(1)}%`;
 }
+
+/** Unix seconds → "YYYY-MM-DD HH:MM:SS" (UTC). Empty for 0/undefined. */
+export function unixToIso(sec: number | undefined): string {
+  if (!sec) return "";
+  return new Date(sec * 1000).toISOString().replace("T", " ").slice(0, 19);
+}

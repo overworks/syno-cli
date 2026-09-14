@@ -1,7 +1,7 @@
 import type { SynoClient } from "@overworks/syno-core";
 import type { FileEntry, ShareEntry } from "./types.js";
 
-export interface ListOptions {
+export interface ListSharesOptions {
   offset?: number;
   limit?: number;
   sortBy?: "name" | "user" | "group" | "mtime" | "atime" | "ctime" | "crtime" | "posix" | "type";
@@ -10,7 +10,10 @@ export interface ListOptions {
   additional?: string[];
 }
 
-export interface ListFilesOptions extends ListOptions {
+/** @deprecated Renamed to {@link ListSharesOptions} to avoid clashing with other `syno-*` packages. */
+export type ListOptions = ListSharesOptions;
+
+export interface ListFilesOptions extends ListSharesOptions {
   pattern?: string;
   filetype?: "file" | "dir" | "all";
 }
@@ -27,7 +30,7 @@ export interface FilesPage {
   files: FileEntry[];
 }
 
-export async function listShares(client: SynoClient, opts: ListOptions = {}): Promise<SharesPage> {
+export async function listShares(client: SynoClient, opts: ListSharesOptions = {}): Promise<SharesPage> {
   return client.request<SharesPage>({
     api: "SYNO.FileStation.List",
     version: 2,

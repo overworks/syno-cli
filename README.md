@@ -22,7 +22,7 @@ and `SYNO.Core.SyslogClient.*`. More domains (Video, …) will land as additiona
 
 ## Requirements
 
-- Node.js >= 20
+- Node.js >= 22.13 to develop (pnpm 11 requires it); the published packages run on Node >= 20
 
 ## Install
 
@@ -41,6 +41,10 @@ To build from source instead, see [Development](#development).
 # Authenticate against your DSM (stores under profile "default" unless --profile is given)
 syno auth login --host https://nas.example:5001
 syno auth login --profile work --host https://nas.work:5001
+# Non-interactive: --password-stdin or $SYNO_PASSWORD (avoid --password, it lands in shell history)
+echo "$PW" | syno auth login --host https://nas.example:5001 --account me --password-stdin
+# Re-login into an existing profile reuses its host/account and only asks for the password
+syno auth login --profile work
 
 # Inspect / switch / drop profiles
 syno auth list
@@ -100,7 +104,7 @@ syno log list --type connection --keyword login
 syno log status
 
 # Every non-auth command accepts --profile <name> to override the current profile for one call
-syno --profile work file list
+syno file list --profile work
 
 # Or set SYNO_PROFILE to switch the default profile for a shell (precedence: --profile > $SYNO_PROFILE > current)
 SYNO_PROFILE=work syno file list

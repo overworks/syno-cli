@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { getProfile } from "../../config.js";
 import { printJson } from "../../output.js";
+import { resolveProfileName } from "../../client-from-config.js";
 
 interface ShowOptions {
   json?: boolean;
@@ -13,13 +14,14 @@ function maskSid(sid: string): string {
 
 export function authShowCommand(): Command {
   return new Command("show")
-    .description("Show details of a stored auth profile (default: current)")
-    .argument("[name]", "Profile name; omit to show current")
+    .description("Show details of a stored auth profile (default: $SYNO_PROFILE or current)")
+    .argument("[name]", "Profile name; omit to show the current one")
     .option("--json", "Emit JSON instead of a key/value list")
     .action(async (name: string | undefined, opts: ShowOptions) => {
-      const found = await getProfile(name);
+      const target = resolveProfileName(name);
+      const found = await getProfile(target);
       if (!found) {
-        const which = name ? `Profile "${name}"` : "Current profile";
+        const which = target ? `Profile "${target}"` : "Current profile";
         throw new Error(`${which} not found. Run \`syno auth list\` to see configured profiles.`);
       }
       const view = {

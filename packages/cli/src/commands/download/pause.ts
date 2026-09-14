@@ -1,40 +1,37 @@
 import { Command } from "commander";
-import { pauseTasks, resumeTasks } from "@overworks/syno-ds";
+import { pauseTasks, resumeTasks, type TaskActionResult } from "@overworks/syno-ds";
 import { clientFromConfig } from "../../client-from-config.js";
+import { printJson } from "../../output.js";
+import { type ConnectionOptions, withConnectionOptions, withJsonOption } from "../shared.js";
 
-interface PauseOptions {
-  host?: string;
-  profile?: string;
+interface TaskActionOptions extends ConnectionOptions {
+  json?: boolean;
 }
 
-function summarize(results: Array<{ id: string; error: number }>): string {
-  return results
-    .map((r) => (r.error === 0 ? `${r.id}: ok` : `${r.id}: error ${r.error}`))
-    .join("\n");
+/** One line per task: `<id>: <verb>` or `<id>: error <code>`. Shared with `download rm`. */
+export function printTaskActionResults(results: TaskActionResult[], verb: string, json: boolean | undefined): void {
+  if (json) return printJson(results);
+  for (const r of results) {
+    process.stdout.write(`${r.id}: ${r.error === 0 ? verb : `error ${r.error}`}\n`);
+  }
 }
 
 export function downloadPauseCommand(): Command {
-  return new Command("pause")
+  return withConnectionOptions(withJsonOption(new Command("pause"), "status lines"))
     .description("Pause one or more tasks")
     .argument("<ids...>", "Task IDs to pause")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
-    .action(async (ids: string[], opts: PauseOptions) => {
+    .action(async (ids: string[], opts: TaskActionOptions) => {
       const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
-      const res = await pauseTasks(client, ids);
-      process.stdout.write(`${summarize(res)}\n`);
+      printTaskActionResults(await pauseTasks(client, ids), "paused", opts.json);
     });
 }
 
 export function downloadResumeCommand(): Command {
-  return new Command("resume")
+  return withConnectionOptions(withJsonOption(new Command("resume"), "status lines"))
     .description("Resume one or more paused tasks")
     .argument("<ids...>", "Task IDs to resume")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
-    .action(async (ids: string[], opts: PauseOptions) => {
+    .action(async (ids: string[], opts: TaskActionOptions) => {
       const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
-      const res = await resumeTasks(client, ids);
-      process.stdout.write(`${summarize(res)}\n`);
+      printTaskActionResults(await resumeTasks(client, ids), "resumed", opts.json);
     });
 }

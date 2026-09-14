@@ -1,22 +1,18 @@
 import { Command } from "commander";
 import { queryApiInfo } from "@overworks/syno-core";
 import { clientFromConfig } from "../../client-from-config.js";
+import { type ConnectionOptions, withConnectionOptions, withJsonOption } from "../shared.js";
 import { printJson, printTable } from "../../output.js";
 
-interface ApiListOptions {
+interface ApiListOptions extends ConnectionOptions {
   query?: string;
-  host?: string;
-  profile?: string;
   json?: boolean;
 }
 
 export function apiListCommand(): Command {
-  return new Command("list")
+  return withConnectionOptions(withJsonOption(new Command("list")))
     .description("List APIs exposed by the DSM (SYNO.API.Info)")
     .option("--query <substr>", "Filter API names by substring (case-insensitive)")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
-    .option("--json", "Emit JSON instead of a table")
     .action(async (opts: ApiListOptions) => {
       const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const info = await queryApiInfo(client, "all");

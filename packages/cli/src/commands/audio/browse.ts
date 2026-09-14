@@ -2,26 +2,22 @@ import { Command } from "commander";
 import { listAlbums, listArtists, listPlaylists, listSongs, type AudioLibrary } from "@overworks/syno-audio";
 import { clientFromConfig } from "../../client-from-config.js";
 import { printJson, printTable } from "../../output.js";
+import { type ConnectionOptions, intArg, withConnectionOptions, withJsonOption } from "../shared.js";
 
-interface BrowseOptions {
-  host?: string;
-  profile?: string;
+interface BrowseOptions extends ConnectionOptions {
   json?: boolean;
   library?: AudioLibrary;
-  limit?: string;
+  limit?: number;
 }
 
 function commonOptions(cmd: Command): Command {
-  return cmd
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
+  return withConnectionOptions(withJsonOption(cmd))
     .option("--library <kind>", "Library: all | personal | shared")
-    .option("--limit <n>", "Max rows to return")
-    .option("--json", "Emit JSON instead of a table");
+    .option("--limit <n>", "Max rows to return", intArg("--limit"));
 }
 
 function listArgs(opts: BrowseOptions) {
-  return { library: opts.library, limit: opts.limit ? Number(opts.limit) : undefined };
+  return { library: opts.library, limit: opts.limit };
 }
 
 export function audioSongCommand(): Command {

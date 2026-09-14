@@ -4,12 +4,12 @@
  * are optional.
  */
 export interface SurveillanceInfo {
-  /** Surveillance Station version string, e.g. `"9.1.2-1234"`. */
+  /** Surveillance Station version, split into components (e.g. 9.1.2 → {major: 9, minor: 1, build: 2}). */
   version?: { major?: number; minor?: number; build?: number };
   cameraNumber?: number;
   /** Licensed camera count. */
   maxCameraSupport?: number;
-  /** True when the package runs on the DSM you're logged into. */
+  /** Non-zero when the installed licenses cover the configured cameras. */
   isLicenseEnough?: number;
   userPriv?: number;
   [key: string]: unknown;

@@ -12,13 +12,9 @@ export interface Album {
   [key: string]: unknown;
 }
 
-/**
- * Album list page. The Foto API has returned the array under both `list` and
- * `albums` across versions, so both are optional — read whichever is set.
- */
+/** Album list page (normalized: the DSM returns the array as `list` or `albums`, depending on release). */
 export interface AlbumListPage {
-  list?: Album[];
-  albums?: Album[];
+  albums: Album[];
   total?: number;
 }
 
@@ -35,20 +31,17 @@ export interface PhotoItem {
   /** Capture time (unix epoch seconds). */
   time?: number;
   takentime?: number;
-  /** `"photo"`, `"video"`, or `"live"`. */
+  /** `"photo"`, `"video"`, or `"live"` (normalized from `type` / `item_type`). */
   type?: string;
-  item_type?: string;
   owner_user_id?: number;
   folder_id?: number;
   [key: string]: unknown;
 }
 
-/** Item list page. Both `items`/`list` + `total`/`totalCount` are accepted. */
+/** Item list page (normalized: the DSM returns `items`/`list` and `total`/`totalCount`, depending on release). */
 export interface ItemListPage {
-  items?: PhotoItem[];
-  list?: PhotoItem[];
+  items: PhotoItem[];
   total?: number;
-  totalCount?: number;
 }
 
 export interface ListItemsOptions {

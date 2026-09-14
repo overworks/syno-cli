@@ -32,4 +32,10 @@ export interface SynoRequest {
    * `undefined` and `null` are dropped.
    */
   params?: Record<string, unknown>;
+  /**
+   * HTTP method. `GET` (default) puts `params` in the query string; `POST`
+   * sends them — and `_sid` — as an `application/x-www-form-urlencoded`
+   * body, keeping credentials out of URLs and server access logs.
+   */
+  httpMethod?: "GET" | "POST";
 }

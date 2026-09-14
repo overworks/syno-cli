@@ -35,7 +35,7 @@ syno completion bash >> ~/.bashrc-syno
 syno completion zsh  > ~/.zsh/completions/_syno
 ```
 
-Every non-auth command accepts `--profile <name>` (or `$SYNO_PROFILE`) and `--json` for scripting.
+Every non-auth command accepts `--profile <name>` (or `$SYNO_PROFILE`); table-producing commands and mutations accept `--json` for scripting (binary downloads write the file instead).
 Profiles are stored at `~/.config/syno-cli/config.json` (mode `0600`).
 
 See the [repository README](https://github.com/overworks/syno-cli#readme) for the full command list.

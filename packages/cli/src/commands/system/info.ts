@@ -1,20 +1,16 @@
 import { Command } from "commander";
 import { getSystemInfo } from "@overworks/syno-system";
 import { clientFromConfig } from "../../client-from-config.js";
+import { type ConnectionOptions, withConnectionOptions, withJsonOption } from "../shared.js";
 import { printJson, printTable } from "../../output.js";
 
-interface SystemInfoOptions {
-  host?: string;
-  profile?: string;
+interface SystemInfoOptions extends ConnectionOptions {
   json?: boolean;
 }
 
 export function systemInfoCommand(): Command {
-  return new Command("info")
+  return withConnectionOptions(withJsonOption(new Command("info")))
     .description("Show model, firmware, uptime, and temperature")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
-    .option("--json", "Emit JSON instead of a table")
     .action(async (opts: SystemInfoOptions) => {
       const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const info = await getSystemInfo(client);

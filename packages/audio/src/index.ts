@@ -17,6 +17,9 @@ export type {
   ArtistListPage,
   Playlist,
   PlaylistListPage,
+  AudioListOptions,
   ListOptions,
+  ListSongsOptions,
+  SongAdditionalField,
   GetCoverOptions,
 } from "./types.js";

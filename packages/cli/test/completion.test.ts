@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { Command } from "commander";
 import { completionCommand } from "../src/commands/completion.js";
 
@@ -59,7 +61,7 @@ describe("completion bash", () => {
 
   it("ends with `complete -F <fn> <binary>`", async () => {
     const out = await emit(buildProgram(), "bash");
-    expect(out.trim().endsWith("complete -F _syno_complete syno")).toBe(true);
+    expect(out.trim().endsWith("complete -o default -F _syno_complete syno")).toBe(true);
   });
 });
 
@@ -67,7 +69,7 @@ describe("completion zsh", () => {
   it("starts with #compdef and registers via compdef", async () => {
     const out = await emit(buildProgram(), "zsh");
     expect(out.startsWith("#compdef syno")).toBe(true);
-    expect(out.trim().endsWith("compdef _syno syno")).toBe(true);
+    expect(out).toContain("compdef _syno syno");
   });
 
   it("uses compadd per subcommand path", async () => {
@@ -93,12 +95,62 @@ describe("--name <binary>", () => {
     }
     const out = chunks.join("");
     expect(out).toContain("_nas_complete()");
-    expect(out.trim().endsWith("complete -F _nas_complete nas")).toBe(true);
+    expect(out.trim().endsWith("complete -o default -F _nas_complete nas")).toBe(true);
   });
 });
 
 describe("unsupported shell", () => {
   it("throws", async () => {
     await expect(emit(buildProgram(), "fish" as "bash")).rejects.toThrow(/Unsupported shell/);
+  });
+});
+
+const run = promisify(execFile);
+
+/** Drive the generated bash function for a given command line and return COMPREPLY. */
+async function bashComplete(script: string, line: string[]): Promise<string[]> {
+  const words = line.map((w) => `'${w.replace(/'/g, "'\\''")}'`).join(" ");
+  const probe = `${script}
+COMP_WORDS=(${words})
+COMP_CWORD=$(( \${#COMP_WORDS[@]} - 1 ))
+_syno_complete
+printf '%s\\n' "\${COMPREPLY[@]}"
+`;
+  const { stdout } = await run("bash", ["-c", probe]);
+  return stdout.split("\n").filter(Boolean);
+}
+
+describe("completion bash (executed)", () => {
+  it("still offers flags after a positional argument", async () => {
+    const out = await emit(buildProgram(), "bash");
+    const reply = await bashComplete(out, ["syno", "file", "list", "/home/me", "--"]);
+    expect(reply).toContain("--json");
+    expect(reply).not.toContain("login");
+  });
+
+  it("offers subcommands at each level", async () => {
+    const out = await emit(buildProgram(), "bash");
+    expect(await bashComplete(out, ["syno", ""])).toEqual(expect.arrayContaining(["auth", "file", "completion"]));
+    expect(await bashComplete(out, ["syno", "auth", "l"])).toEqual(expect.arrayContaining(["login", "logout"]));
+  });
+
+  it("skips the value of a value-taking flag", async () => {
+    const out = await emit(buildProgram(), "bash");
+    const reply = await bashComplete(out, ["syno", "auth", "login", "--profile", "work", "--h"]);
+    expect(reply).toEqual(["--host", "--help"]);
+  });
+
+  it("falls back to filename completion", async () => {
+    const out = await emit(buildProgram(), "bash");
+    expect(out).toContain("complete -o default -F _syno_complete syno");
+  });
+});
+
+describe("completion zsh (static)", () => {
+  it("does not shadow the tied $path array and supports fpath autoload", async () => {
+    const out = await emit(buildProgram(), "zsh");
+    expect(out).not.toMatch(/local path=/);
+    expect(out).toContain("zsh_eval_context[-1]");
+    expect(out).toContain("compdef _syno syno");
   });
 });

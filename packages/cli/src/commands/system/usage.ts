@@ -1,12 +1,11 @@
 import { Command } from "commander";
 import { getUtilization } from "@overworks/syno-system";
 import { clientFromConfig } from "../../client-from-config.js";
+import { type ConnectionOptions, withConnectionOptions, withJsonOption } from "../shared.js";
 import { printJson, printTable } from "../../output.js";
-import { bytes } from "./format.js";
+import { bytes } from "../../format.js";
 
-interface SystemUsageOptions {
-  host?: string;
-  profile?: string;
+interface SystemUsageOptions extends ConnectionOptions {
   json?: boolean;
 }
 
@@ -21,11 +20,8 @@ function pct(n: number | undefined): string {
 }
 
 export function systemUsageCommand(): Command {
-  return new Command("usage")
+  return withConnectionOptions(withJsonOption(new Command("usage")))
     .description("Show real-time CPU, memory, network, and disk utilization")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
-    .option("--json", "Emit JSON instead of a table")
     .action(async (opts: SystemUsageOptions) => {
       const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
       const u = await getUtilization(client);

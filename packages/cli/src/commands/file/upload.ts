@@ -1,10 +1,11 @@
 import { Command } from "commander";
 import { uploadFromPath } from "@overworks/syno-file";
+import { printJson } from "../../output.js";
 import { clientFromConfig } from "../../client-from-config.js";
+import { type ConnectionOptions, withConnectionOptions, withJsonOption } from "../shared.js";
 
-interface UploadOptions {
-  host?: string;
-  profile?: string;
+interface UploadOptions extends ConnectionOptions {
+  json?: boolean;
   overwrite?: boolean;
   skip?: boolean;
   parents?: boolean;
@@ -12,12 +13,10 @@ interface UploadOptions {
 }
 
 export function fileUploadCommand(): Command {
-  return new Command("upload")
+  return withConnectionOptions(withJsonOption(new Command("upload"), "a status line"))
     .description("Upload a local file into a remote directory (streamed from disk)")
     .argument("<local>", "Path to local file")
     .argument("<remoteDir>", "Destination folder on the DSM (e.g. /home/me)")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
     .option("--overwrite", "Overwrite if a file with the same name exists")
     .option("--skip", "Skip if a file with the same name exists")
     .option("-p, --parents", "Create missing parents of the remote directory")
@@ -31,6 +30,7 @@ export function fileUploadCommand(): Command {
         overwrite: opts.skip ? "skip" : opts.overwrite ?? false,
         createParents: opts.parents,
       });
-      process.stdout.write(`Uploaded ${local} → ${res.path}\n`);
+      if (opts.json) printJson(res);
+      else process.stdout.write(`Uploaded ${local} → ${res.path}\n`);
     });
 }

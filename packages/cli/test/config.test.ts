@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -135,5 +135,34 @@ describe("loadConfig", () => {
     await upsertProfile("default", sample());
     const raw = await readFile(configPath(), "utf8");
     expect(JSON.parse(raw)).toMatchObject({ current: "default" });
+  });
+});
+
+describe("loadConfig validation", () => {
+  async function writeRaw(text: string): Promise<void> {
+    await mkdir(join(workDir, "syno-cli"), { recursive: true });
+    await writeFile(configPath(), text, "utf8");
+  }
+
+  it("reports truncated JSON as a malformed config, not a SyntaxError", async () => {
+    await writeRaw('{"current":"default","profiles":{"default":{"host":"h');
+    await expect(loadConfig()).rejects.toThrow(/malformed/);
+  });
+
+  it("rejects profiles missing required fields", async () => {
+    await writeRaw(JSON.stringify({ current: "x", profiles: { x: {} } }));
+    await expect(loadConfig()).rejects.toThrow(/malformed/);
+  });
+
+  it("rejects an array in place of the profiles map", async () => {
+    await writeRaw(JSON.stringify({ current: "x", profiles: [] }));
+    await expect(loadConfig()).rejects.toThrow(/malformed/);
+  });
+
+  it("leaves no temp file behind after a write", async () => {
+    await upsertProfile("a", sample());
+    await upsertProfile("b", sample());
+    const files = await readdir(join(workDir, "syno-cli"));
+    expect(files).toEqual(["config.json"]);
   });
 });

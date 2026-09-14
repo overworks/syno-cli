@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 import { Command } from "commander";
-import { SynoApiError } from "@overworks/syno-core";
+import { SynoApiError, SynoHttpError } from "@overworks/syno-core";
 import { activeProfile } from "./client-from-config.js";
 import { sessionExpiryHint } from "./session-hint.js";
 import { authCommand } from "./commands/auth/index.js";
@@ -48,6 +48,13 @@ async function main(): Promise<void> {
   await program.parseAsync(process.argv);
 }
 
+function describeCause(err: Error): string | undefined {
+  const cause = (err as { cause?: unknown }).cause;
+  if (!(cause instanceof Error)) return undefined;
+  const code = (cause as NodeJS.ErrnoException).code;
+  return code ? `${code}: ${cause.message}` : cause.message;
+}
+
 main().catch((err: unknown) => {
   if (err instanceof SynoApiError) {
     process.stderr.write(`${err.message}\n`);
@@ -57,6 +64,10 @@ main().catch((err: unknown) => {
   }
   if (err instanceof Error) {
     process.stderr.write(`${err.message}\n`);
+    // SynoHttpError already folds its cause into the message; for anything
+    // else (e.g. a bare `fetch failed`), the cause carries the useful detail.
+    const cause = err instanceof SynoHttpError ? undefined : describeCause(err);
+    if (cause) process.stderr.write(`  caused by: ${cause}\n`);
     process.exit(1);
   }
   process.stderr.write(`Unknown error: ${String(err)}\n`);

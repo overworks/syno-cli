@@ -1,5 +1,5 @@
 export { listShares, list } from "./list.js";
-export type { ListOptions, ListFilesOptions, SharesPage, FilesPage } from "./list.js";
+export type { ListSharesOptions, ListOptions, ListFilesOptions, SharesPage, FilesPage } from "./list.js";
 
 export { createFolder } from "./create-folder.js";
 export type { CreateFolderArgs } from "./create-folder.js";

@@ -22,7 +22,7 @@ Today the surface is `SYNO.API.Auth`, `SYNO.API.Info`, `SYNO.FileStation.*`, `SY
 
 ## Tooling
 
-- Node.js >= 20 (maintainer uses Node 24)
+- Node.js >= 22.13 for development (pnpm 11 requires it; the published packages still run on Node >= 20). Maintainer uses Node 24.
 - pnpm 11, Turborepo 2
 - TypeScript 5 with `NodeNext` module resolution, `strict` + `noUncheckedIndexedAccess`
 - Vitest for tests; HTTP is exercised via an injected `fetch` — no real network
@@ -49,7 +49,7 @@ packages/
       client.ts       # SynoClient: request / requestRaw / requestForm, _sid, API path cache
       auth.ts         # login / logout
       api-info.ts     # queryApiInfo (SYNO.API.Info wrapper)
-      errors.ts       # SynoApiError + code → message tables
+      errors.ts       # SynoApiError (DSM `success:false`) / SynoHttpError (transport) + code → message tables
       types.ts
       index.ts        # public surface
     test/             # vitest, fetch is mocked
@@ -106,10 +106,12 @@ packages/
       config.ts                # named-profile config CRUD (loadConfig / upsertProfile / removeProfile / setCurrent / listProfiles)
       client-from-config.ts    # {host?, profile?} → SynoClient; tracks activeProfile()
       session-hint.ts          # sessionExpiryHint: re-login command for 105/106/107/119
-      output.ts                # printTable / printJson
-      prompt.ts                # readline + raw-mode password prompt
+      output.ts                # printTable (CJK-width aware) / printJson
+      format.ts                # bytes / pctOf / unixToIso shared by table renderers
+      prompt.ts                # readline (EOF-safe) + raw-mode UTF-8 password prompt
       interactive.ts           # STUB — interactive mode not implemented yet
       commands/
+        shared.ts            # withConnectionOptions / withJsonOption / intArg / saveResponse (.part + rename)
         auth/
           index.ts             # `syno auth` group
           login.ts logout.ts list.ts show.ts use.ts rm.ts
@@ -123,7 +125,7 @@ packages/
           list.ts add.ts pause.ts rm.ts
         system/
           index.ts             # `syno system` group (SYNO.Core.System.* + storage)
-          info.ts usage.ts storage.ts format.ts
+          info.ts usage.ts storage.ts
         surveillance/
           index.ts             # `syno surveillance` group (SYNO.SurveillanceStation.*)
           info.ts camera.ts recording.ts   # camera = list + snapshot (binary)
@@ -139,18 +141,18 @@ packages/
 ## Conventions
 
 - **ESM only** (`"type": "module"`). Import other source files with the `.js` suffix from TypeScript — NodeNext resolves them correctly after emit.
-- **Single HTTP entrypoint**: every Synology call goes through `SynoClient.{request,requestRaw,requestForm,requestStreamForm}`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths. Use `request` for JSON envelopes, `requestRaw` for binary downloads, `requestForm` for in-memory multipart, and `requestStreamForm` when the request body has a single large file part that must be streamed off disk.
+- **Single HTTP entrypoint**: every Synology call goes through `SynoClient.{request,requestRaw,requestForm,requestStreamForm}`. New APIs should rely on `client.resolvePath(api)` (auto-fetches `SYNO.API.Info` once and caches it) rather than hard-coding `*.cgi` paths. Use `request` for JSON envelopes (pass `httpMethod: "POST"` when params carry credentials or long lists — they go in a urlencoded body instead of the URL), `requestRaw` for binary downloads (a 200 + JSON error envelope is detected and thrown as `SynoApiError`), `requestForm` for in-memory multipart, and `requestStreamForm` when the request body has a single large file part that must be streamed off disk. Legacy CGIs (`DownloadStation/task.cgi`, `AudioStation/*.cgi`) take list params comma-separated; `entry.cgi` APIs take JSON arrays.
 - **Domain packages**: one workspace package per Synology service (`@overworks/syno-file`, `@overworks/syno-ds`, …). They depend on `@overworks/syno-core` via `workspace:*`, expose function-style APIs (`list(client, …)`), and are consumed by `cli` under matching command groups (`syno file …`, `syno download …`). npm package names can't contain "download" (blocklisted), so Download Station ships as `syno-ds` even though its CLI group is `download`.
-- **Error model**: `SynoApiError { code, api, method, isSessionExpired }`. Auth codes get auth-aware messages via `describeSynoErrorCode`. Don't swallow these — bubble them up.
-- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting. Command-group names mirror DSM's built-in aliases — `file` for `SYNO.FileStation.*` and `download` for `SYNO.DownloadStation.Task`. `SYNO.Core.System.*` has no short DSM alias, so its group is named after the API family: `system` (info/usage/storage). Auth/session lives under `syno auth` (login/logout/list/show/use/rm) — there is no top-level `syno login`.
-- **Profiles**: every non-auth command accepts `--profile <name>`. Selection precedence is `--profile` > `$SYNO_PROFILE` > config `current`. `--host <url>` is still available as a one-shot URL override on the same profile (useful pre-login or for peeking). All three are resolved in one place — `client-from-config.ts`.
+- **Error model**: `SynoApiError { code, api, method, isSessionExpired }` for DSM-level failures and `SynoHttpError { status, api, method }` for transport failures (non-2xx, non-JSON body, connection errors). Never feed an HTTP status through the Synology code tables — they overlap numerically (`400` is "wrong password" for Auth). Service-specific messages live in `describeSynoErrorCode`'s per-API-prefix tables. Don't swallow these — bubble them up.
+- **CLI commands** live in `packages/cli/src/commands/<group>/<name>.ts`, return a `Command`, and accept a `--json` flag that switches `printTable` → `printJson` for scripting. Build them with the helpers in `commands/shared.ts` (`withConnectionOptions`, `withJsonOption`, `intArg` for numeric flags, `saveResponse` for binary output) rather than re-declaring `--profile/--host/--json` by hand. Command-group names mirror DSM's built-in aliases — `file` for `SYNO.FileStation.*` and `download` for `SYNO.DownloadStation.Task`. `SYNO.Core.System.*` has no short DSM alias, so its group is named after the API family: `system` (info/usage/storage). Auth/session lives under `syno auth` (login/logout/list/show/use/rm) — there is no top-level `syno login`.
+- **Profiles**: every non-auth command accepts `--profile <name>`. Selection precedence is `--profile` > `$SYNO_PROFILE` > config `current`. `--host <url>` is still available as a one-shot URL override on the same profile (useful pre-login or for peeking). All three are resolved in one place — `client-from-config.ts` (`resolveProfileName` is what the `auth` subcommands use too, so `$SYNO_PROFILE` applies everywhere).
 - **Credentials**: `~/.config/syno-cli/config.json` is `{current, profiles: {<name>: {host, account, sid, savedAt}}}` at mode 0600. Only `packages/cli/src/config.ts` reads/writes it. The schema has no `version` field — malformed shapes are rejected, not migrated. Never log passwords or sids (the `auth show` command masks the sid to `****<last 4>`).
 - **`core` has no runtime deps.** Add new runtime deps to `cli`. If you need a parser/util in `core`, write it.
 - **Tests don't hit the network.** Inject a `fetch` into `SynoClient({ fetch })` and assert on the URL + body.
 
 ## Releasing
 
-All five packages publish together as a **fixed** Changesets group (one shared version). Add a
+All `@overworks/*` packages publish together as a **fixed** Changesets group (one shared version). Add a
 changeset with `pnpm changeset`, merge to `0.x`; CI opens a "Version Packages" PR, and merging that
 PR publishes to npm with provenance. Versions/`workspace:*` are rewritten by Changesets — never bump
 by hand. Full process + one-time `NPM_TOKEN` setup: [`RELEASING.md`](./RELEASING.md). Config lives in

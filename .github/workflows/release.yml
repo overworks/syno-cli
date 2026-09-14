@@ -30,6 +30,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Gate publishing on a green build: this workflow runs in parallel with
+      # ci.yml, and the "Version Packages" PR (opened with GITHUB_TOKEN) never
+      # triggers pull_request workflows, so nothing else checks it.
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+
       # Opens/updates a "Version Packages" PR when changesets are pending;
       # publishes to npm when that PR is merged (package.json versions > npm).
       - name: Create Release PR or publish

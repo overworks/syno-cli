@@ -19,7 +19,11 @@
     "cli",
     "synology-cli",
     "filestation",
-    "downloadstation"
+    "downloadstation",
+    "surveillance-station",
+    "synology-photos",
+    "audiostation",
+    "syslog"
   ],
   "publishConfig": {
     "access": "public",

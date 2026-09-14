@@ -89,7 +89,74 @@ describe("SynoClient.requestStreamForm", () => {
     expect(Buffer.byteLength(observed, "utf-8")).toBe(claimedLength);
   });
 
-  it("throws SynoApiError on transport failure", async () => {
+  it("orders meta fields before the file part and escapes quotes in the filename", async () => {
+    let bodyText = "";
+    const fetchImpl = vi.fn(async (_input: string, init?: RequestInit) => {
+      bodyText = await new Response(init?.body as BodyInit).text();
+      return new Response(JSON.stringify({ success: true, data: {} }), { status: 200 });
+    });
+    const client = new SynoClient({ baseUrl: "https://nas.example:5001", sid: "s", fetch: fetchImpl });
+    client.setApiInfoCache({
+      "SYNO.FileStation.Upload": { path: "entry.cgi", minVersion: 2, maxVersion: 2 },
+    });
+    await client.requestStreamForm({
+      api: "SYNO.FileStation.Upload",
+      version: 2,
+      method: "upload",
+      fields: { path: "/dest" },
+      file: { field: "file", filename: 'we"ird\r\n.txt', stream: streamFromString("x"), size: 1 },
+    });
+    expect(bodyText.indexOf('name="api"')).toBeLessThan(bodyText.indexOf('name="file"'));
+    expect(bodyText.indexOf('name="_sid"')).toBeLessThan(bodyText.indexOf('name="file"'));
+    expect(bodyText).toContain('filename="we%22ird%0D%0A.txt"');
+  });
+
+  it("accepts a web ReadableStream as the file source", async () => {
+    let bodyText = "";
+    const fetchImpl = vi.fn(async (_input: string, init?: RequestInit) => {
+      bodyText = await new Response(init?.body as BodyInit).text();
+      return new Response(JSON.stringify({ success: true, data: {} }), { status: 200 });
+    });
+    const client = new SynoClient({ baseUrl: "https://nas.example:5001", fetch: fetchImpl });
+    client.setApiInfoCache({
+      "SYNO.FileStation.Upload": { path: "entry.cgi", minVersion: 2, maxVersion: 2 },
+    });
+    await client.requestStreamForm({
+      api: "SYNO.FileStation.Upload",
+      version: 2,
+      method: "upload",
+      fields: {},
+      file: {
+        field: "file",
+        filename: "w.txt",
+        stream: new Blob(["web-bytes"]).stream() as unknown as import("node:stream/web").ReadableStream<Uint8Array>,
+        size: 9,
+      },
+    });
+    expect(bodyText).toContain("web-bytes");
+  });
+
+  it("fails with a descriptive error when the stream length differs from size", async () => {
+    const fetchImpl = vi.fn(async (_input: string, init?: RequestInit) => {
+      await new Response(init?.body as BodyInit).text();
+      return new Response(JSON.stringify({ success: true, data: {} }), { status: 200 });
+    });
+    const client = new SynoClient({ baseUrl: "https://nas.example:5001", fetch: fetchImpl });
+    client.setApiInfoCache({
+      "SYNO.FileStation.Upload": { path: "entry.cgi", minVersion: 2, maxVersion: 2 },
+    });
+    await expect(
+      client.requestStreamForm({
+        api: "SYNO.FileStation.Upload",
+        version: 2,
+        method: "upload",
+        fields: {},
+        file: { field: "file", filename: "short.bin", stream: streamFromString("12345"), size: 9 },
+      }),
+    ).rejects.toThrow(/short\.bin.*ended after 5 bytes, expected 9/);
+  });
+
+  it("throws SynoHttpError on transport failure", async () => {
     const fetchImpl = vi.fn(
       async () => new Response("nope", { status: 500 }),
     );
@@ -110,6 +177,6 @@ describe("SynoClient.requestStreamForm", () => {
           size: 1,
         },
       }),
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ name: "SynoHttpError", status: 500 });
   });
 });

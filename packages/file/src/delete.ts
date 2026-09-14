@@ -58,6 +58,8 @@ export interface DeleteOptions extends StartDeleteArgs {
   onProgress?: (status: DeleteStatus) => void;
   /** Optional sleep implementation (for tests). */
   sleep?: (ms: number) => Promise<void>;
+  /** Optional clock (for tests). Default `Date.now`. */
+  now?: () => number;
 }
 
 const defaultSleep = (ms: number): Promise<void> =>
@@ -68,17 +70,22 @@ const defaultSleep = (ms: number): Promise<void> =>
  * Throws on timeout. Errors raised mid-task surface as `SynoApiError`.
  */
 export async function del(client: SynoClient, opts: DeleteOptions): Promise<DeleteStatus> {
-  const { taskid } = await startDelete(client, opts);
+  const { taskid } = await startDelete(client, {
+    path: opts.path,
+    recursive: opts.recursive,
+    accurateProgress: opts.accurateProgress,
+  });
   const interval = opts.pollIntervalMs ?? 500;
   const timeout = opts.timeoutMs ?? 5 * 60_000;
   const sleep = opts.sleep ?? defaultSleep;
-  const started = Date.now();
+  const now = opts.now ?? Date.now;
+  const started = now();
 
   while (true) {
     const status = await deleteStatus(client, taskid);
     opts.onProgress?.(status);
     if (status.finished) return status;
-    if (Date.now() - started > timeout) {
+    if (now() - started > timeout) {
       await stopDelete(client, taskid).catch(() => undefined);
       throw new Error(`Delete task ${taskid} timed out after ${timeout}ms`);
     }

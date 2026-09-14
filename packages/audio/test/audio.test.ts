@@ -40,7 +40,7 @@ describe("listSongs", () => {
       expect(url.searchParams.get("api")).toBe("SYNO.AudioStation.Song");
       expect(url.searchParams.get("method")).toBe("list");
       expect(url.searchParams.get("library")).toBe("shared");
-      expect(url.searchParams.get("additional")).toBe('["song_tag","song_audio"]');
+      expect(url.searchParams.get("additional")).toBe("song_tag,song_audio");
       return { json: { success: true, data: { total: 1, songs: [{ id: "music_1", title: "Track" }] } } };
     });
     const page = await listSongs(c, { library: "shared" });

@@ -21,11 +21,4 @@ export interface FileEntryAdditional {
   type?: string;
 }
 
-export interface ListPage<T> {
-  total: number;
-  offset: number;
-  files?: T[];
-  shares?: T[];
-}
-
 export type Overwrite = boolean | "skip";

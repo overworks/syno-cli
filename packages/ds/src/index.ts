@@ -12,6 +12,6 @@ export type {
   CreateTaskArgs,
   DeleteTasksOptions,
   TaskActionResult,
-  TaskAdditional,
+  TaskAdditionalField,
 } from "./task.js";
-export type { Task, TaskListPage, TaskStatus } from "./types.js";
+export type { Task, TaskAdditional, TaskListPage, TaskStatus } from "./types.js";

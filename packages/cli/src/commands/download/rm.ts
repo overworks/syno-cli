@@ -1,28 +1,28 @@
 import { Command } from "commander";
 import { deleteTasks } from "@overworks/syno-ds";
 import { clientFromConfig } from "../../client-from-config.js";
+import { type ConnectionOptions, withConnectionOptions, withJsonOption } from "../shared.js";
+import { printTaskActionResults } from "./pause.js";
 
-interface RmOptions {
-  host?: string;
-  profile?: string;
+interface RmOptions extends ConnectionOptions {
+  json?: boolean;
   forceComplete?: boolean;
 }
 
 export function downloadRmCommand(): Command {
-  return new Command("rm")
+  return withConnectionOptions(withJsonOption(new Command("rm"), "status lines"))
     .description("Remove one or more tasks")
     .argument("<ids...>", "Task IDs to remove")
-    .option("--profile <name>", "Auth profile to use (default: current)")
-    .option("--host <url>", "Override the DSM URL for this call only")
     .option(
       "--force-complete",
       "Treat unfinished tasks as completed (skip seed-ratio target etc.)",
     )
     .action(async (ids: string[], opts: RmOptions) => {
       const { client } = await clientFromConfig({ host: opts.host, profile: opts.profile });
-      const res = await deleteTasks(client, { id: ids, forceComplete: opts.forceComplete });
-      for (const r of res) {
-        process.stdout.write(`${r.id}: ${r.error === 0 ? "removed" : `error ${r.error}`}\n`);
-      }
+      printTaskActionResults(
+        await deleteTasks(client, { id: ids, forceComplete: opts.forceComplete }),
+        "removed",
+        opts.json,
+      );
     });
 }
